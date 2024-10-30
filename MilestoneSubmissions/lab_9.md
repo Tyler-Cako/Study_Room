@@ -10,6 +10,7 @@
 5. Application Description
 	This a
 6. Vision Statement
+	
 7. Version Control
 8. Development Methodology: Agile w/ Github projects
 9. Communication Plan: 
