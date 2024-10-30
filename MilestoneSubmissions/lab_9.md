@@ -14,5 +14,5 @@
 8. Development Methodology: Agile w/ Github projects
 9. Communication Plan: Teams
 10. Meeting Plan: Wednesday 2pm
-11. Use-Case Diagram:
-12. Wireframes:
+11. Use-Case Diagram: ./Use_case_diagram.png
+12. Wireframes: ../wireframes.txt
