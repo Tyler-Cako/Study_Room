@@ -14,4 +14,3 @@
 	- Alan: Frontend
 	- Jake: Websockets/Deployment
 	- Josh: NodeJS:Account creation and login.
-
