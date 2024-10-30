@@ -1,4 +1,4 @@
-#presenting project
+## presenting project
 	- Presented general idea of project
 	- Automatically creates a group chat based on course schedule
 	- Chatroom is used with websockets.
@@ -8,7 +8,7 @@
 	- Might need a super user -> prevent cheating 
 	- Database
 	- Need to finish milestone for lab tomorrow
-#Dividing up work
+## Dividing up work
 	- Tyler: DB
 	- Jaron: Wireframes
 	- Alan: Frontend
