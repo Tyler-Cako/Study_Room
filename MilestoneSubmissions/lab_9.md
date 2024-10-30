@@ -9,10 +9,10 @@
 4. Application Name: Study_Room
 5. Application Description
 	This a
-6. Vision Statement
-7. Version Control
+6. Vision Statement:
+7. Version Control: Github https://github.com/Tyler-Cako/Study_Room
 8. Development Methodology: Agile w/ Github projects
-9. Communication Plan: 
-10. Meeting Plan: Saturady 12pm-12:30pm
-11. Use-Case Diagram
-12. Wireframes
+9. Communication Plan: Teams
+10. Meeting Plan: Wednesday 2pm
+11. Use-Case Diagram:
+12. Wireframes:
