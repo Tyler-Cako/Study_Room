@@ -25,9 +25,11 @@ such that they can commicate with eachother in real time during classes, or when
     3. Update .env file according to the environment variables posted in the teams.
     4. docker-compose up
         - This runs the database on your local machine
-    5. Navigate to ProjectSourceCode/app/
-    6. npm i
-    7. npm run dev
+    5. Navigate to ProjectSourceCode/db
+    6. sh connect.sh
+    7. Navigate to ProjectSourceCode/app/
+    8. npm i
+    9. npm run dev
         - This starts the nodeJS web application with Nodemon
 
 ### How to run tests
