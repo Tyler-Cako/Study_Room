@@ -24,7 +24,7 @@ such that they can commicate with eachother in real time during classes, or when
     2. Create a .env file in ProjectSourceCode
     3. Update .env file according to the environment variables posted in the teams.
     4. Run Docker Daemon (start docker)
-    5. docker-compose up
+    5. docker-compose up -d
         - This runs the database on your local machine
     6. Navigate to ProjectSourceCode/db
     7. sh connect.sh
