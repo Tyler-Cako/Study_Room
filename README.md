@@ -20,6 +20,7 @@ such that they can commicate with eachother in real time during classes, or when
 - others...
 
 ### How to run locally
+    0. If running on windows, open a WSL terminal
     1. Navigate to ProjectSourceCode
     2. Create a .env file in ProjectSourceCode
     3. Update .env file according to the environment variables posted in the teams.
