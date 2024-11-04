@@ -1,17 +1,17 @@
-a.nav-link {
+.nav-link {
     font-size: 20px;
     padding-left: 50px;
 
     color:white;
 }
-a.navbar-brand {
+.navbar-brand {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     color: white;
     font-size: 25px;
 }
-div.centered-div {
+.centered-div {
     position: absolute;
     left: 50%;
     top:40%;
