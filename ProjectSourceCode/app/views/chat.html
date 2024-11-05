@@ -20,7 +20,7 @@
                         <a class="nav-link" href=""><u> Add class </u> </a>   <!--  TODO: ADD LINK TO ADD CLASS PAGE -->
                     </li>
                 </ul>
-                <h1>CSCI 1111</h1>
+                <h1 id="class-name">CSCI 1111</h1>
                 <ul class="navbar-nav" style="justify-content: flex-end;">
                     <li class="nav-item active">
                         <a class="nav-link" href=""><u> Log out </u> </a>   <!--  TODO: ADD LINK TO log out -->
@@ -35,25 +35,26 @@
                 <a>CSCI 2222</a>
                 <a>CSCI 3333</a>
                 <a>CSCI 4444</a>
-                <a>CSCI 5555</a>
+                <a onclick="changeClass('CSCI 5555')">CSCI 5555</a>
             </ul>
-          </div>
+        </div>
+
+        <div id="chat-window">
+            <div id="message-history">
+
+            </div>
+            <form action="sendMessage" method="post">
+                <input type="text">
+                <input type="submit">
+            </form>
+        </div>
 
     </body>
 </html>
 
 
 <style>
-    nav.navbar{
-        justify-content: space-between;
-        background-color: var(--bs-secondary-bg);
-        color: white;
-    }
-
-    ul.navbar-nav{
-        width: 200px;
-    }
-
+/* Link animations: */
     a{
         width: fit-content;
         color: white;
@@ -65,17 +66,21 @@
         box-shadow: inset 100px 0 0 100px rgba(81, 55, 134, 0.8);
         color: white;
     }
-
+/* sidebar: */
     #sidebar{
         width: fit-content;
         a{
             margin: 10px 0;
         }
     }
-
-    body{    
-    --bs-body-bg: rgba(81, 55, 134, 0.15);
-    --bs-secondary-bg: rgba(81, 55, 134, 0.6);
-    background-color: var(--bs-body-bg);
-    }
 </style>
+
+<script>
+    function changeClass(new_title){
+        // Switch between message lists once implemented
+        titleEl = document.getElementById("class-name");
+        titleEl.innerHTML = new_title
+    }
+
+
+</script>

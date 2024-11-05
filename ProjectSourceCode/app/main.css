@@ -1,3 +1,14 @@
+body{    
+    --bs-body-bg: rgba(81, 55, 134, 0.15);
+    --bs-secondary-bg: rgba(81, 55, 134, 0.6);
+    background-color: var(--bs-body-bg);
+    height: 100vh;
+}
+nav.navbar{
+    justify-content: space-between;
+    background-color: var(--bs-secondary-bg);
+    color: white;
+}
 .nav-link {
     font-size: 20px;
     padding-left: 50px;
@@ -10,6 +21,9 @@
     transform: translateX(-50%);
     color: white;
     font-size: 25px;
+}
+ul.navbar-nav{
+    width: 200px;
 }
 .centered-div {
     position: absolute;
