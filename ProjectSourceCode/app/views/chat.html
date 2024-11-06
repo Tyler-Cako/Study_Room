@@ -28,27 +28,30 @@
                 </ul>
         </nav>
 
-        <div id="sidebar" class="d-flex flex-column flex-shrink-0 p-3" >
-            <ul class="nav nav-pills flex-column mb-auto">
-                <!-- TODO ADD onclick, and associated js for the following: -->
-                <a>CSCI 1111</a>
-                <a>CSCI 2222</a>
-                <a>CSCI 3333</a>
-                <a>CSCI 4444</a>
-                <a onclick="changeClass('CSCI 5555')">CSCI 5555</a>
-            </ul>
-        </div>
-
-        <div id="chat-window">
-            <div id="message-history">
-
+        <div id="content">
+            <div id="sidebar" class="d-flex flex-column flex-shrink-0 p-3" >
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <!-- TODO ADD onclick, and associated js for the following: -->
+                    <a>CSCI 1111</a>
+                    <a>CSCI 2222</a>
+                    <a>CSCI 3333</a>
+                    <a>CSCI 4444</a>
+                    <a onclick="changeClass('CSCI 5555')">CSCI 5555</a>
+                </ul>
             </div>
-            <form action="sendMessage" method="post">
-                <input type="text">
-                <input type="submit">
-            </form>
+    
+            <div id="chat-window">
+                <div id="message-history">
+    
+                </div>
+                <form class="w-50" action="sendMessage" method="post">
+                    <textarea class="form-control" id="message" rows="4"></textarea>
+                    <button id="send-btn" class="btn btn-primary" type="submit">
+                        Send
+                    </button>
+                </form>
+            </div>
         </div>
-
     </body>
 </html>
 
@@ -66,12 +69,36 @@
         box-shadow: inset 100px 0 0 100px rgba(81, 55, 134, 0.8);
         color: white;
     }
-/* sidebar: */
+
+    #content{
+        height: calc(100vh - 4.5rem);
+        overflow: hidden;
+        display: flex;
+    }
+    
     #sidebar{
-        width: fit-content;
+        width: 6rem;
+        height: inherit;
         a{
             margin: 10px 0;
         }
+    }
+
+    #chat-window{
+        width: 100%;
+        padding: 2rem 6rem 2rem 0;
+        display: flex;
+        justify-content: center;
+    }
+
+    form{
+        justify-content: center;
+        align-items: flex-end;
+    }
+
+    #send-btn{
+        margin-top: 0.5rem;
+        background-color: var(--bs-secondary);
     }
 </style>
 

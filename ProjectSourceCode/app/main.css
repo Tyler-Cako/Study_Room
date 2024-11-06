@@ -1,12 +1,12 @@
 body{    
     --bs-body-bg: rgba(81, 55, 134, 0.15);
-    --bs-secondary-bg: rgba(81, 55, 134, 0.6);
+    --bs-secondary: rgba(81, 55, 134, 0.6);
     background-color: var(--bs-body-bg);
     height: 100vh;
 }
 nav.navbar{
     justify-content: space-between;
-    background-color: var(--bs-secondary-bg);
+    background-color: var(--bs-secondary);
     color: white;
 }
 .nav-link {
