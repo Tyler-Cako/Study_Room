@@ -1,6 +1,6 @@
 services:
   db:
-    image: 'postgres:latest'
+    image: "postgres:latest"
     env_file: ./.env
     restart: always
     ports:
@@ -8,6 +8,18 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+    volumes:
+      - ./app:/home/node/app
 
   pgadmin:
     image: dpage/pgadmin4
