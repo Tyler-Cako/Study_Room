@@ -10,19 +10,28 @@ const server = require('http').createServer(app);
 const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
+app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 app.set('views', path.join(__dirname, 'views'));
 app.get('/', (req, res) => {
     res.redirect('/login');
 });
-
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'chat.html'));
+});
 app.listen(PORT, () => {
     console.log(`App listening on port: ${PORT}`);
 });
 
-app.get('/login', (req, res) => {
-    res.render('views/login');
-});
+// need a render engine - raw html is not going to cut it
+// app.get('/login', (req, res) => {
+//     res.render('views/login');
+// });
 
+
+// websocket code from tutorial, converted to TS
 io.on('connection', socket => {
     socket.on('joinRoom', ({ username, room }) => {
         const user = newUser(socket.id, username, room);
