@@ -24,13 +24,13 @@ such that they can commicate with eachother in real time during classes, or when
 - others...
 
 ### How to run locally
-
+    0. If running on windows, open a WSL terminal
     1. Navigate to ProjectSourceCode
     2. Create a .env file in ProjectSourceCode
     3. Update .env file according to the environment variables posted in the teams.
-    4. docker-compose up
-        - This runs the database on your local machine
-        - Upon successful creation of database container, it runs the Node.JS container, and pgadmin
+    4. Run Docker Daemon (start docker)
+    5. docker-compose up
+        - This runs the database, pgadmin and the web containers
 
 ### How to run tests
 
