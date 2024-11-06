@@ -1,11 +1,24 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import session from 'express-session';
+import path from 'path';
 import db from './db';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('views', path.join(__dirname, 'views'))
+app.set('view engine', 'html')
 app.use(express.json());
+
+// set Session
+app.use(
+    session({
+      secret: 'secret_token',
+      saveUninitialized: true,
+      resave: true,
+    })
+  );
 
 // testing database
 db.connect()
@@ -15,13 +28,9 @@ db.connect()
   })
   .catch(error => {
     console.log('ERROR:', error.message || error);
-  });
-
-// TEST API ROUTES
-
-app.get('/', (req, res) => {
-    res.send("hello world!");
 });
+
+// <---- TEST API ROUTES ---->
 
 app.post('/test', function (req, res) {
     const query =
@@ -45,7 +54,7 @@ app.post('/test', function (req, res) {
       .catch(function (err) {
         return console.log(err);
       });
-  });
+});
 
 app.get('/get_students', (req, res) => {
     var query = 'SELECT * FROM student;';
@@ -59,6 +68,38 @@ app.get('/get_students', (req, res) => {
       })
       .catch(function (error) {
         return console.log(error);
+      });
+});
+
+// <---- ACTUAL API ROUTES ---->
+
+app.get('/', (req, res) => {
+    res.render('views/register');
+});
+
+// Register
+app.post('/register', async (req, res) => {
+    //hash the password using bcrypt library
+    const hash = await bcrypt.hash(req.body.password, 10);
+  
+    const query = 
+        'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
+
+    db.any(query, [
+        req.body.name,
+        req.body.email,
+        hash,
+    ])
+
+      .then(function (data) {
+        res.status(201).json({
+          data: data,
+        });
+        res.redirect('views/chat');
+      })
+      .catch(function (err) {
+        console.log(err);
+        res.redirect('/register');
       });
 });
 
