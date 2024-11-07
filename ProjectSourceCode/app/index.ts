@@ -16,7 +16,7 @@ const io = new Server(server);
 
 // app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public', 'js')));
 app.use(express.static(path.join(__dirname, 'dist')));
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
@@ -37,10 +37,10 @@ app.get('/', (req, res) => {
     res.redirect('/login');
 });
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'lgin.html'));
+    res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+    res.sendFile(path.join(__dirname, 'views', 'chat.html'));
 });
 
 app.post('/test', function (req, res) {
