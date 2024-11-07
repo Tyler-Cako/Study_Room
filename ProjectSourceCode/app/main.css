@@ -15,8 +15,8 @@
 .centered-div {
     position: absolute;
     left: 50%;
-    top:40%;
-    transform: translate(-50%, -90%);
+    top:50%;
+    transform: translate(-50%, -80%);
 }
 form {
     display: flex;
@@ -24,15 +24,17 @@ form {
     align-items: center;
     font-size:20px;
 }
-#username, #password, #button {
+#name, #password, #email, #button {
     border-radius: 10px;
 }
 
 .under-text {
     text-align:center;
+    margin-top:10px;
 }
 .under-text p,a {
     font-size:12px;
     color:white;
     display: inline;
+    font-weight:bold;
 }
