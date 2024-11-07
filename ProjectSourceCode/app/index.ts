@@ -95,11 +95,11 @@ app.post('/register', async (req, res) => {
         res.status(201).json({
           data: data,
         });
-        res.redirect('views/chat');
+        // res.redirect('views/chat');
       })
       .catch(function (err) {
         console.log(err);
-        res.redirect('/register');
+        // res.redirect('/register');
       });
 });
 
