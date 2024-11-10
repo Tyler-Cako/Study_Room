@@ -10,8 +10,10 @@ CREATE TABLE student (
 CREATE TABLE class (
     class_id SERIAL PRIMARY KEY,
     name varchar(250) NOT NULL,
-    class_time timestamp NOT NULL,
-    location varchar(250)
+    days varchar(8) NOT NULL,
+    start_time int NOT NULL,
+    stop_time int NOT NULL,
+    section int NOT NULL
 );
 
 CREATE TABLE student_to_class (
@@ -37,3 +39,17 @@ CREATE TABLE messages (
     message_body varchar(500) NOT NULL,
     created_at timestamp NOT NULL
 );
+
+-- Init class table.. Students and related tables will be updated with Node script due to password hashing.
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 1300 - Computer Science 1: Starting Computing', 'MWF', 545, 595, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 1300 - Computer Science 1: Starting Computing', 'MWF', 805, 855, 200);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 1300 - Computer Science 1: Starting Computing', 'MWF', 935, 985, 300);
+
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 2270 - Computer Science 2: Data Structures', 'MWF', 805, 855, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 2270 - Computer Science 2: Data Structures', 'MWF', 935, 985, 200);
+
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 2400 - Computer Systems', 'TTh', 660, 735, 100);
+
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3155 - Principles of Programming Languages', 'TTh', 570, 645, 100);
+
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3308 - Software Development Methods and Tools', 'MW', 480, 530, 100);
