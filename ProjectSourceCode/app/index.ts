@@ -134,14 +134,27 @@ app.post('/register', async (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log(`user ${socket.id} connected`);
-    // this will emit the event to all connected sockets
-    io.emit(`user ${socket.id} connected`); 
-    socket.on('chat message', (msg) => {
-        io.emit('chat message', msg);
-      });
+    // Join a room
+    socket.on('joinRoom', ({ username, room }) => {
+        socket.join(room);
+        (socket as any).username = username;
+        (socket as any).room = room;
+        console.log(`User ${username} joined room ${room}`);
+
+        // Emit to the room that a user has joined
+        socket.to(room).emit('userJoined', { id: socket.id, msg: `${username} has joined the room` });
+    });
+    // Listen for chat messages
+    socket.on('chatMessage', ({ room, msg }) => {
+        const id_msg = { id: socket.id, msg: msg };
+        io.to(room).emit('chatMessage', id_msg);
+    });
     socket.on('disconnect', () => {
-      console.log('user disconnected');
+        const { username, room } = (socket as any);
+        if (room) {
+            console.log(`User ${username} disconnected from room ${room}`);
+            socket.to(room).emit('userDisconnect', { id: socket.id, username: username });
+        }
     });
   });
 
