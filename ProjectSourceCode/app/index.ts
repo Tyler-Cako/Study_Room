@@ -1,10 +1,12 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import db from './db';
+import session from 'express-session';
 import path from 'path';
-import {Server} from 'socket.io';
-import {io as clientIo} from 'socket.io-client';
+import db from './db';
+import { Server } from 'socket.io';
+
 const PORT = process.env.PORT || 3000;
+
 const app = express();
 const server = require('http').createServer(app, {
     cors: {
@@ -21,6 +23,19 @@ app.use(express.static(path.join(__dirname, 'dist')));
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
 
+app.set('views', path.join(__dirname, 'views'))
+app.set('view engine', 'html')
+app.use(express.json());
+
+// set Session
+app.use(
+    session({
+      secret: 'secret_token',
+      saveUninitialized: true,
+      resave: true,
+    })
+  );
+
 // testing database
 db.connect()
   .then(obj => {
@@ -29,19 +44,9 @@ db.connect()
   })
   .catch(error => {
     console.log('ERROR:', error.message || error);
-  });
+});
 
-// TEST API ROUTES
-
-app.get('/', (req, res) => {
-    res.redirect('/login');
-});
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'login.html'));
-});
-app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'chat.html'));
-});
+// <---- TEST API ROUTES ---->
 
 app.post('/test', function (req, res) {
     const query =
@@ -65,7 +70,7 @@ app.post('/test', function (req, res) {
       .catch(function (err) {
         return console.log(err);
       });
-  });
+});
 
 app.get('/get_students', (req, res) => {
     var query = 'SELECT * FROM student;';
@@ -82,10 +87,47 @@ app.get('/get_students', (req, res) => {
       });
 });
 
-// need a render engine - raw html is not going to cut it
-// app.get('/login', (req, res) => {
-//     res.send('views/login');
-// });
+// testing database
+db.connect()
+  .then(obj => {
+    console.log('Database connection successful'); // you can view this message in the docker compose logs
+    obj.done(); // success, release the connection;
+  })
+  .catch(error => {
+    console.log('ERROR:', error.message || error);
+  });
+
+  
+// <---- ACTUAL API ROUTES ---->
+app.get('/', (req, res) => {
+    res.render('views/register');
+});
+
+// Register
+app.post('/register', async (req, res) => {
+    //hash the password using bcrypt library
+    const hash = await bcrypt.hash(req.body.password, 10);
+  
+    const query = 
+        'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
+
+    db.any(query, [
+        req.body.name,
+        req.body.email,
+        hash,
+    ])
+
+      .then(function (data) {
+        res.status(201).json({
+          data: data,
+        });
+        // res.redirect('views/chat');
+      })
+      .catch(function (err) {
+        console.log(err);
+        // res.redirect('/register');
+      });
+});
 
 io.on('connection', (socket) => {
     console.log(`user ${socket} connected`);
