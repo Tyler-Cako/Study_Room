@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
-import path from 'path';
+import path, { dirname } from 'path';
 import db from './db';
 import { Server } from 'socket.io';
 
@@ -97,10 +97,14 @@ db.connect()
     console.log('ERROR:', error.message || error);
   });
 
-  
+
 // <---- ACTUAL API ROUTES ---->
 app.get('/', (req, res) => {
     res.render('views/register');
+});
+
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, './views/chat.html'));
 });
 
 // Register
@@ -130,12 +134,17 @@ app.post('/register', async (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log(`user ${socket} connected`);
+    console.log(`user ${socket.id} connected`);
+    // this will emit the event to all connected sockets
+    io.emit(`user ${socket.id} connected`); 
+    socket.on('chat message', (msg) => {
+        io.emit('chat message', msg);
+      });
     socket.on('disconnect', () => {
       console.log('user disconnected');
     });
   });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`App listening on port: ${PORT}`);
 });
