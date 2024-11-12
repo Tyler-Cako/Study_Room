@@ -32,6 +32,10 @@ db.connect()
 
 // <---- TEST API ROUTES ---->
 
+app.get('/welcome', (req, res) => {
+  res.json({status: 'success', message: 'Welcome!'});
+});
+
 app.post('/test', function (req, res) {
     const query =
       'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
@@ -103,6 +107,8 @@ app.post('/register', async (req, res) => {
       });
 });
 
-app.listen(PORT, () => {
-    console.log(`App listening on port: ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`App listening on port: ${PORT}`);
 });
+
+export default server;
