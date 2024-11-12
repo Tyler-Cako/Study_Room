@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
 import path from 'path';
-import db from './db';
+import db from './util/db';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -97,18 +97,18 @@ app.post('/register', async (req, res) => {
 
       .then(function (data) {
         res.status(201).json({
+          message: "Sucessfully registered user!",
           data: data,
         });
         // res.redirect('views/chat');
       })
       .catch(function (err) {
         console.log(err);
-        // res.redirect('/register');
+        //res.redirect('/register');
       });
 });
 
-const server = app.listen(PORT, () => {
+module.exports = app.listen(PORT, () => {
   console.log(`App listening on port: ${PORT}`);
 });
 
-export default server;

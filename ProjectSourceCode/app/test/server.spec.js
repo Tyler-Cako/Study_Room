@@ -1,6 +1,6 @@
 // ********************** Initialize server **********************************
 
-const server = require('../index.ts'); //TODO: Make sure the path to your index.js is correctly added
+const server = require('../dist/index.js'); //TODO: Make sure the path to your index.js is correctly added
 
 // ********************** Import Libraries ***********************************
 
@@ -34,10 +34,10 @@ describe('Testing Add User API', () => {
     chai
       .request(server)
       .post('/register')
-      .send({student_id: 5, name: 'John Doe', email: 'john@gmail.com', password: '12345'})
+      .send({name: 'John Smith', email: 'john123@gmail.com', password: '112345'})
       .end((err, res) => {
-        expect(res).to.have.status(200);
-        expect(res.body.message).to.equals('Success');
+        expect(res).to.have.status(201);
+        expect(res.body.message).to.equals('Sucessfully registered user!');
         done();
       });
   });
