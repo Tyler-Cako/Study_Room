@@ -102,14 +102,13 @@ db.connect()
 
 // <---- ACTUAL API ROUTES ---->
 app.get('/', (req, res) => {
-    res.render('register.hbs');
+    res.render('pages/register.hbs');
 });
 
-app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, './views/chat.html'));
+app.get('/register', (req, res) => {
+    res.render('pages/register.hbs');
 });
 
-// Register
 app.post('/register', async (req, res) => {
     //hash the password using bcrypt library
     const hash = await bcrypt.hash(req.body.password, 10);
@@ -134,6 +133,17 @@ app.post('/register', async (req, res) => {
         // res.redirect('/register');
       });
 });
+
+app.get('/login', (req, res) => {
+  res.render('pages/login.hbs');
+});
+
+app.get('/chat', (req, res) => {
+  res.render('pages/chat.hbs');
+});
+
+
+
 
 io.on('connection', (socket) => {
     // Join a room
