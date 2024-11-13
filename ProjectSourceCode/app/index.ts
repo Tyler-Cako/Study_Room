@@ -4,6 +4,8 @@ import session from 'express-session';
 import path, { dirname } from 'path';
 import db from './db';
 import { Server } from 'socket.io';
+import handlebars from 'handlebars';
+import { engine } from 'express-handlebars';
 
 const PORT = process.env.PORT || 3000;
 
@@ -23,9 +25,9 @@ app.use(express.static(path.join(__dirname, 'dist')));
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
 
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'html')
-app.use(express.json());
+// Register `handlebars` as our view engine using its bound `engine()` function.
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
 
 // set Session
 app.use(
@@ -100,7 +102,7 @@ db.connect()
 
 // <---- ACTUAL API ROUTES ---->
 app.get('/', (req, res) => {
-    res.render('views/register');
+    res.render('register.hbs');
 });
 
 app.get('/chat', (req, res) => {
