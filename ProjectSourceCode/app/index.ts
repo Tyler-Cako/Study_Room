@@ -1,20 +1,31 @@
 import express from 'express';
+import handlebars from 'express-handlebars'
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
 import path from 'path';
+import bodyParser from 'body-parser'
 import db from './db';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// // create `ExpressHandlebars` instance and configure the layouts and partials dir.
+// const hbs = handlebars.create({
+//   extname: 'hbs',
+//   layoutsDir: __dirname + '/views',
+// });
+
+// app.engine('hbs', hbs.engine);
+app.set('view engine', 'html');
+app.engine('html', require('hbs').__express);
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
+app.use(bodyParser.json());
 app.use(express.json());
 
 // set Session
 app.use(
   session({
-    secret: 'secret_token',
+    secret: process.env.SESSION_SECRET,
     saveUninitialized: true,
     resave: true,
   })
@@ -74,12 +85,12 @@ app.get('/get_students', (req, res) => {
 // <---- ACTUAL API ROUTES ---->
 
 app.get('/', (req, res) => {
-  res.render('views/register');
+  res.render('chat');
 });
 
 // Register
 app.get('/register', (req, res) => {
-  res.render('views/register');
+  res.render('register');
 });
 
 app.post('/register', async (req, res) => {
@@ -96,26 +107,28 @@ app.post('/register', async (req, res) => {
   ])
 
     .then(function (data) {
-      res.status(201).json({
-        data: data,
-      });
-      // res.redirect('views/login');
+      res.status(201).json({});
+      res.redirect('login');
     })
     .catch(function (err) {
       console.log(err);
-      // res.redirect('/register');
+      res.redirect('register');
     });
 });
 
 // Login
-const user = {
-  student_id: undefined,
-  name: undefined,
-  email: undefined,
-};
+// const user = {
+//   student_id: undefined,
+//   name: undefined,
+//   email: undefined,
+// };
 
 app.get('/login', (req, res) => {
-  var email = req.query.email;
+  res.render('login');
+});
+
+app.post('/login', (req, res) => {
+  var email = req.body.email;
   var current_student = `select * from student where email = '${email}' LIMIT 1;`;
 
   db.one(current_student)
@@ -124,14 +137,11 @@ app.get('/login', (req, res) => {
       const match = await bcrypt.compare(req.body.password, data.password);
 
       if (match) {
-        user.student_id = data.student_id;
-        user.name = data.name;
-        user.email = data.email;
 
-        req.session.user = user;
+        // req.session.id = data.student_id;
         req.session.save();
 
-        res.redirect('/');
+        res.redirect('chat');
       }
     })
 });
