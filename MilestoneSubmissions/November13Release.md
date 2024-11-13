@@ -28,8 +28,9 @@ In this version, we finished the first steps required to connect the parts of th
 * added init.js to create test users by @Tyler-Cako in https://github.com/Tyler-Cako/Study_Room/pull/43
 * 25 build websocket functionality on backend by @jTucker583 in https://github.com/Tyler-Cako/Study_Room/pull/44
 * 14 chat page html by @chskrds1 in https://github.com/Tyler-Cako/Study_Room/pull/45
-* configured handlebars and changed html files to hbs by @chskrds1 in https://github.com/Tyler-Cako/Study_Room/pull/47
 * 17 login backend functionality by @joshdwright in https://github.com/Tyler-Cako/Study_Room/pull/46
+* configured handlebars and changed html files to hbs by @chskrds1 in https://github.com/Tyler-Cako/Study_Room/pull/47
+* Added handlebars partials and styling for dynamically created messages by @chskrds1 in https://github.com/Tyler-Cako/Study_Room/pull/52
 
 ## New Contributors
 * @Tyler-Cako made their first contribution in https://github.com/Tyler-Cako/Study_Room/pull/1
