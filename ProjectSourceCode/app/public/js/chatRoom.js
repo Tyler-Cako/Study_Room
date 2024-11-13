@@ -1,7 +1,7 @@
 const socket = io();
-const form = document.getElementById('form');
-const input = document.getElementById('input');
-const messages = document.getElementById('messages');
+const form = document.getElementById('send-message-form');
+const input = document.getElementById('input-text');
+const messages = document.getElementById('message-history');
 
 async function getUsernameAndRoom() {
     // const response = await fetch('someapi');
@@ -36,6 +36,7 @@ getUsernameAndRoom().then(data => {
     });
 
     socket.on('chatMessage', (msg) => {
+        console.log(messages);
         const item = document.createElement('li');
         item.textContent = `User ${msg.id}: ${msg.msg}`;
         messages.appendChild(item);

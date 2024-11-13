@@ -18,7 +18,7 @@ const io = new Server(server);
 
 // app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
-app.use(express.static(path.join(__dirname, 'public', 'js')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'dist')));
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
