@@ -139,6 +139,10 @@ app.post('/register', async (req, res) => {
 //   email: undefined,
 // };
 
+app.get('/chat', (req, res) => {
+  res.render('pages/chat.hbs');
+});
+
 app.get('/login', (req, res) => {
   res.render('login');
 });
@@ -171,17 +175,6 @@ const auth = (req, res, next) => {
 };
 
 app.use(auth);
-
-app.get('/login', (req, res) => {
-  res.render('pages/login.hbs');
-});
-
-app.get('/chat', (req, res) => {
-  res.render('pages/chat.hbs');
-});
-
-
-
 
 io.on('connection', (socket) => {
     // Join a room

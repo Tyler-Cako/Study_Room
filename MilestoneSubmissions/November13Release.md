@@ -3,7 +3,7 @@ In this version, we finished the first steps required to connect the parts of th
 1. Jaron created the register classes API endpoint and created test cases for the endpoint
 2. Josh set up the login/register student API endpoint
 3. Jake set up websockets both on the backend API and on the frontend
-4. Alan converted the frontend HTML to handlebars, and created the frontend for the chat room.
+4. Alan converted the frontend pages to handlebars, created handlebars partials, and styled the frontend for the chat room.
 5. Tyler created initialization scripts for test data and worked on bugs as they occurred after code changes.
 
 ## What's Changed
