@@ -102,16 +102,11 @@ db.connect()
 
 // <---- ACTUAL API ROUTES ---->
 app.get('/', (req, res) => {
-    res.render('register.hbs');
+    res.render('pages/register.hbs');
 });
 
-app.get('/chat', (req, res) => {
-    res.sendFile(path.join(__dirname, './views/chat.html'));
-});
-
-// Register
 app.get('/register', (req, res) => {
-  res.render('register');
+    res.render('pages/register.hbs');
 });
 
 app.post('/register', async (req, res) => {
@@ -143,6 +138,10 @@ app.post('/register', async (req, res) => {
 //   name: undefined,
 //   email: undefined,
 // };
+
+app.get('/chat', (req, res) => {
+  res.render('pages/chat.hbs');
+});
 
 app.get('/login', (req, res) => {
   res.render('login');

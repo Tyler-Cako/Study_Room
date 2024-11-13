@@ -23,9 +23,6 @@ nav.navbar{
     font-size: 25px;
     font-weight:bold;
 }
-ul.navbar-nav{
-    width: 200px;
-}
 .centered-div {
     position: absolute;
     left: 50%;

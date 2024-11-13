@@ -1,3 +1,6 @@
+ul.navbar-nav{
+    width: 180px;
+}
 .class-switch{
     background: none;
     border: none;        
@@ -23,9 +26,6 @@
 #sidebar{
     width: 8rem;
     height: inherit;
-    a{
-        margin: 10px 0;
-    }
 }
 
 #chat-window{
