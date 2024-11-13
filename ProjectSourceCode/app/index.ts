@@ -1,11 +1,27 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
-import path from 'path';
+import path, { dirname } from 'path';
 import db from './db';
+import { Server } from 'socket.io';
+
+const PORT = process.env.PORT || 3000;
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const server = require('http').createServer(app, {
+    cors: {
+        origin: process.env.NODE_ENV === "production" ? false :
+        [`http://localhost:${PORT}`]
+    }
+});
+const io = new Server(server);
+
+// app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
+// app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'dist')));
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.json());
 
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'html')
@@ -71,10 +87,24 @@ app.get('/get_students', (req, res) => {
       });
 });
 
-// <---- ACTUAL API ROUTES ---->
+// testing database
+db.connect()
+  .then(obj => {
+    console.log('Database connection successful'); // you can view this message in the docker compose logs
+    obj.done(); // success, release the connection;
+  })
+  .catch(error => {
+    console.log('ERROR:', error.message || error);
+  });
 
+
+// <---- ACTUAL API ROUTES ---->
 app.get('/', (req, res) => {
     res.render('views/register');
+});
+
+app.get('/chat', (req, res) => {
+    res.sendFile(path.join(__dirname, './views/chat.html'));
 });
 
 // Register
@@ -103,6 +133,31 @@ app.post('/register', async (req, res) => {
       });
 });
 
-app.listen(PORT, () => {
+io.on('connection', (socket) => {
+    // Join a room
+    socket.on('joinRoom', ({ username, room }) => {
+        socket.join(room);
+        (socket as any).username = username;
+        (socket as any).room = room;
+        console.log(`User ${username} joined room ${room}`);
+
+        // Emit to the room that a user has joined
+        socket.to(room).emit('userJoined', { id: socket.id, msg: `${username} has joined the room` });
+    });
+    // Listen for chat messages
+    socket.on('chatMessage', ({ room, msg }) => {
+        const id_msg = { id: socket.id, msg: msg };
+        io.to(room).emit('chatMessage', id_msg);
+    });
+    socket.on('disconnect', () => {
+        const { username, room } = (socket as any);
+        if (room) {
+            console.log(`User ${username} disconnected from room ${room}`);
+            socket.to(room).emit('userDisconnect', { id: socket.id, username: username });
+        }
+    });
+  });
+
+server.listen(PORT, () => {
     console.log(`App listening on port: ${PORT}`);
 });
