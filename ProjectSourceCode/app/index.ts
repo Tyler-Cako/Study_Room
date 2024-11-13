@@ -31,11 +31,11 @@ app.set('view engine', 'handlebars');
 
 // set Session
 app.use(
-    session({
-      secret: 'secret_token',
-      saveUninitialized: true,
-      resave: true,
-    })
+  session({
+    secret: process.env.SESSION_SECRET,
+    saveUninitialized: true,
+    resave: true,
+  })
   );
 
 // testing database
@@ -79,9 +79,9 @@ app.get('/get_students', (req, res) => {
     db.any(query)
       .then(function (data) {
         res.status(201).json({
-            status: 'success',
-            data: data,
-            message: 'data retrieved successfully',
+          status: 'success',
+          data: data,
+          message: 'data retrieved successfully',
         });
       })
       .catch(function (error) {
@@ -110,30 +110,72 @@ app.get('/chat', (req, res) => {
 });
 
 // Register
-app.post('/register', async (req, res) => {
-    //hash the password using bcrypt library
-    const hash = await bcrypt.hash(req.body.password, 10);
-  
-    const query = 
-        'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
-
-    db.any(query, [
-        req.body.name,
-        req.body.email,
-        hash,
-    ])
-
-      .then(function (data) {
-        res.status(201).json({
-          data: data,
-        });
-        // res.redirect('views/chat');
-      })
-      .catch(function (err) {
-        console.log(err);
-        // res.redirect('/register');
-      });
+app.get('/register', (req, res) => {
+  res.render('register');
 });
+
+app.post('/register', async (req, res) => {
+  //hash the password using bcrypt library
+  const hash = await bcrypt.hash(req.body.password, 10);
+  
+  const query = 
+    'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
+
+  db.any(query, [
+    req.body.name,
+    req.body.email,
+    hash,
+  ])
+
+    .then(function (data) {
+      res.status(201).json({});
+      res.redirect('login');
+    })
+    .catch(function (err) {
+      console.log(err);
+      res.redirect('register');
+    });
+});
+
+// Login
+// const user = {
+//   student_id: undefined,
+//   name: undefined,
+//   email: undefined,
+// };
+
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+app.post('/login', (req, res) => {
+  var email = req.body.email;
+  var current_student = `select * from student where email = '${email}' LIMIT 1;`;
+
+  db.one(current_student)
+    .then(async data => {
+      // check if password from request matches with password in DB
+      const match = await bcrypt.compare(req.body.password, data.password);
+
+      if (match) {
+
+        // req.session.id = data.student_id;
+        req.session.save();
+
+        res.redirect('chat');
+      }
+    })
+});
+
+// Authentication middleware.
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  }
+  next();
+};
+
+app.use(auth);
 
 io.on('connection', (socket) => {
     // Join a room
