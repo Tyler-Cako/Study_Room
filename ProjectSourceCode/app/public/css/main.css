@@ -38,7 +38,7 @@ form {
     align-items: center;
     font-size:20px;
 }
-#name, #password, #email, #button {
+#name, #password, #email, #button,#class { /*added #class, need to update on github*/
     border-radius: 10px;
 }
 

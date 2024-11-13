@@ -4,6 +4,8 @@ import session from 'express-session';
 import path, { dirname } from 'path';
 import db from './db';
 import { Server } from 'socket.io';
+import handlebars from 'express-handlebars'; // Use ES module import
+import bodyParser from 'body-parser';
 
 const PORT = process.env.PORT || 3000;
 
@@ -23,9 +25,19 @@ app.use(express.static(path.join(__dirname, 'dist')));
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
 
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'html')
-app.use(express.json());
+
+
+const hbs = handlebars.create({
+  extname: 'hbs',
+  layoutsDir: __dirname + '/views/layouts',
+  partialsDir: __dirname + '/views/partials',
+});
+
+// Register `hbs` as our view engine using its bound `engine()` function.
+app.engine('hbs', hbs.engine);
+app.set('view engine', 'hbs');
+app.use(bodyParser.json());
+
 
 // set Session
 app.use(
@@ -123,14 +135,84 @@ app.post('/register', async (req, res) => {
 
       .then(function (data) {
         res.status(201).json({
+          message: "Successfully registered user!",
           data: data,
         });
         // res.redirect('views/chat');
       })
       .catch(function (err) {
         console.log(err);
-        // res.redirect('/register');
+        //res.redirect('/register');
       });
+});
+
+const user = {
+  student_id: undefined,
+  name: undefined,
+  email: undefined,
+};
+
+app.get('/login', (req, res) => {
+  var email = req.query.email;
+  var current_student = `select * from student where email = '${email}' LIMIT 1;`;
+  db.one(current_student)
+    .then(async data => {
+      // check if password from request matches with password in DB
+      const match = await bcrypt.compare(req.body.password, data.password);
+      if (match) {
+        user.student_id = data.student_id;
+        user.name = data.name;
+        user.email = data.email;
+        req.session.user = user;
+        req.session.save();
+        res.redirect('/');
+      }
+    })
+});
+
+// Authentication middleware.
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  }
+  next();
+};
+app.use(auth);
+
+
+
+
+app.post('/add', (req, res)=> {
+  const course_id = req.body.class;
+  const student_id = req.session.user.student_id;
+
+  db.tx(async t => {
+    const {is_added} = await t.one(
+      `SELECT
+        * from student_to_class 
+      WHERE 
+      course_id = $1 AND
+      student_id = $2`,
+      [course_id, student_id]
+    );
+
+    if (is_added) {
+      throw new Error("You are already in this chat.");
+    }
+
+    // There are either no prerequisites, or all have been taken.
+    await t.none(
+      'INSERT INTO student_to_class (course_id, student_id) VALUES ($1, $2);',
+      [course_id, student_id]
+    );
+    return `Successfully added to the chat for course ${course_id}`;
+  })
+  .then(message => {
+    res.render('add_class', { message, error: false }); // Success message
+  })
+  .catch(err => {
+    res.render('add_class', { message: err.message, error: true }); // Error message
+  });
 });
 
 io.on('connection', (socket) => {
