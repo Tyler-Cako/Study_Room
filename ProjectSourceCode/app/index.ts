@@ -41,6 +41,7 @@ app.engine('hbs', engine({
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
 // set Session
 app.use(
@@ -144,24 +145,26 @@ app.post('/register', async (req, res) => {
         hash,
     ])
 
-      .then(function (data) {
-        res.status(201).json({
-          message: "Successfully registered user!",
-          data: data,
-        });
-        res.redirect('views/chat');
-      })
+    .then(function (data) {
+      console.log("Successfully registered user:", data);
+      res.redirect('/login');  // Redirect to the login page
+    })
       .catch(function (err) {
         console.log(err);
         //res.redirect('/register');
       });
 });
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, './views/login.html'));
+});
+
 const user = {
   student_id: undefined,
   name: undefined,
   email: undefined,
 };
-app.get('/login', (req, res) => {
+
+app.post('/login', (req, res) => {
   var email = req.query.email;
   var current_student = `select * from student where email = '${email}' LIMIT 1;`;
   db.one(current_student)
@@ -174,7 +177,7 @@ app.get('/login', (req, res) => {
         user.email = data.email;
         req.session.user = user;
         req.session.save();
-        res.redirect('/');
+        res.sendFile(path.join(__dirname, './views/chat.html'));
       }
     })
     .catch(err => {
