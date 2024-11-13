@@ -24,18 +24,18 @@ services:
       - ./app:/home/node/app
     command: 'npm run testandrun'
 
-  pgadmin:
-    image: dpage/pgadmin4
-    ports:
-      - 15433:80
-    env_file:
-      - ./.env
-    depends_on:
-      - db
-    # networks:
-    #   - postgres-network
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin/
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   ports:
+  #     - 15433:80
+  #   env_file:
+  #     - ./.env
+  #   depends_on:
+  #     - db
+  #   # networks:
+  #   #   - postgres-network
+  #   volumes:
+  #     - pgadmin-data:/var/lib/pgadmin/
 
 volumes:
   postgres-data: {}

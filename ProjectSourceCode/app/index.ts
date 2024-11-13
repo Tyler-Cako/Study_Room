@@ -1,23 +1,41 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
-import path from 'path';
-import db from './util/db';
+import path, { dirname } from 'path';
+import db from './db';
+import { Server } from 'socket.io';
+import handlebars from 'handlebars';
+import { engine } from 'express-handlebars';
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'html')
+const app = express();
+const server = require('http').createServer(app, {
+    cors: {
+        origin: process.env.NODE_ENV === "production" ? false :
+        [`http://localhost:${PORT}`]
+    }
+});
+const io = new Server(server);
+
+// app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
+// app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'dist')));
+app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
+
+// Register `handlebars` as our view engine using its bound `engine()` function.
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
 
 // set Session
 app.use(
-    session({
-      secret: 'secret_token',
-      saveUninitialized: true,
-      resave: true,
-    })
+  session({
+    secret: 'secret_token',
+    saveUninitialized: true,
+    resave: true,
+  })
   );
 
 // testing database
@@ -65,9 +83,9 @@ app.get('/get_students', (req, res) => {
     db.any(query)
       .then(function (data) {
         res.status(201).json({
-            status: 'success',
-            data: data,
-            message: 'data retrieved successfully',
+          status: 'success',
+          data: data,
+          message: 'data retrieved successfully',
         });
       })
       .catch(function (error) {
@@ -75,40 +93,118 @@ app.get('/get_students', (req, res) => {
       });
 });
 
+// testing database
+db.connect()
+  .then(obj => {
+    console.log('Database connection successful'); // you can view this message in the docker compose logs
+    obj.done(); // success, release the connection;
+  })
+  .catch(error => {
+    console.log('ERROR:', error.message || error);
+  });
+
+
 // <---- ACTUAL API ROUTES ---->
-
 app.get('/', (req, res) => {
-    res.render('views/register');
+    res.render('pages/register.hbs');
 });
 
-// Register
+app.get('/register', (req, res) => {
+    res.render('pages/register.hbs');
+});
+
 app.post('/register', async (req, res) => {
-    //hash the password using bcrypt library
-    const hash = await bcrypt.hash(req.body.password, 10);
+  //hash the password using bcrypt library
+  const hash = await bcrypt.hash(req.body.password, 10);
   
-    const query = 
-        'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
+  const query = 
+    'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
 
-    db.any(query, [
-        req.body.name,
-        req.body.email,
-        hash,
-    ])
+  db.any(query, [
+    req.body.name,
+    req.body.email,
+    hash,
+  ])
 
-      .then(function (data) {
-        res.status(201).json({
-          message: "Sucessfully registered user!",
-          data: data,
-        });
-        // res.redirect('views/chat');
-      })
-      .catch(function (err) {
-        console.log(err);
-        //res.redirect('/register');
-      });
+    .then(function (data) {
+      res.status(201).json({});
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
 });
 
-module.exports = app.listen(PORT, () => {
-  console.log(`App listening on port: ${PORT}`);
+// Login
+// const user = {
+//   student_id: undefined,
+//   name: undefined,
+//   email: undefined,
+// };
+
+app.get('/chat', (req, res) => {
+  res.render('pages/chat.hbs');
 });
 
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+app.post('/login', (req, res) => {
+  var email = req.body.email;
+  var current_student = `select * from student where email = '${email}' LIMIT 1;`;
+
+  db.one(current_student)
+    .then(async data => {
+      // check if password from request matches with password in DB
+      const match = await bcrypt.compare(req.body.password, data.password);
+
+      if (match) {
+
+        // req.session.id = data.student_id;
+        req.session.save();
+
+        res.redirect('chat');
+      }
+    })
+});
+
+// Authentication middleware.
+const auth = (req, res, next) => {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  }
+  next();
+};
+
+app.use(auth);
+
+io.on('connection', (socket) => {
+    // Join a room
+    socket.on('joinRoom', ({ username, room }) => {
+        socket.join(room);
+        (socket as any).username = username;
+        (socket as any).room = room;
+        console.log(`User ${username} joined room ${room}`);
+
+        // Emit to the room that a user has joined
+        socket.to(room).emit('userJoined', { id: socket.id, msg: `${username} has joined the room` });
+    });
+    // Listen for chat messages
+    socket.on('chatMessage', ({ room, msg }) => {
+        const id_msg = { id: socket.id, msg: msg };
+        io.to(room).emit('chatMessage', id_msg);
+    });
+    socket.on('disconnect', () => {
+        const { username, room } = (socket as any);
+        if (room) {
+            console.log(`User ${username} disconnected from room ${room}`);
+            socket.to(room).emit('userDisconnect', { id: socket.id, username: username });
+        }
+    });
+  });
+
+server.listen(PORT, () => {
+    console.log(`App listening on port: ${PORT}`);
+});
+
+module.exports = { app, server }
