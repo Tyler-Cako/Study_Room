@@ -1,10 +1,19 @@
+declare module "express-session" {
+  interface SessionData {
+    user?: { 
+      student_id: string,
+      email: string;
+      name: string
+    };
+  }
+}
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import session from 'express-session';
 import path, { dirname } from 'path';
 import db from './db';
 import { Server } from 'socket.io';
-import handlebars from 'express-handlebars'; // Use ES module import
+import { engine } from 'express-handlebars'; 
 import bodyParser from 'body-parser';
 
 const PORT = process.env.PORT || 3000;
@@ -22,22 +31,16 @@ const io = new Server(server);
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'dist')));
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.json());
 
 
-
-const hbs = handlebars.create({
+app.engine('hbs', engine({
   extname: 'hbs',
-  layoutsDir: __dirname + '/views/layouts',
-  partialsDir: __dirname + '/views/partials',
-});
-
-// Register `hbs` as our view engine using its bound `engine()` function.
-app.engine('hbs', hbs.engine);
+  layoutsDir: path.join(__dirname, 'views', 'layouts'),
+  partialsDir: path.join(__dirname, 'views', 'partials'),
+}));
 app.set('view engine', 'hbs');
-app.use(bodyParser.json());
-
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.json()); 
 
 // set Session
 app.use(
@@ -109,14 +112,22 @@ db.connect()
     console.log('ERROR:', error.message || error);
   });
 
+// HANDLEBARS ROUTES // 
+app.get('/add-class-page', (req, res) => {
+  res.render('add_class', { title: 'Add Class', user: req.session.user, layout: false });
+  
+});
 
 // <---- ACTUAL API ROUTES ---->
 app.get('/', (req, res) => {
-    res.render('views/register');
+    res.sendFile(path.join(__dirname, './views/register.html'));
 });
 
 app.get('/chat', (req, res) => {
     res.sendFile(path.join(__dirname, './views/chat.html'));
+});
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, './views/register.html'));
 });
 
 // Register
@@ -138,20 +149,18 @@ app.post('/register', async (req, res) => {
           message: "Successfully registered user!",
           data: data,
         });
-        // res.redirect('views/chat');
+        res.redirect('views/chat');
       })
       .catch(function (err) {
         console.log(err);
         //res.redirect('/register');
       });
 });
-
 const user = {
   student_id: undefined,
   name: undefined,
   email: undefined,
 };
-
 app.get('/login', (req, res) => {
   var email = req.query.email;
   var current_student = `select * from student where email = '${email}' LIMIT 1;`;
@@ -168,6 +177,10 @@ app.get('/login', (req, res) => {
         res.redirect('/');
       }
     })
+    .catch(err => {
+      console.error(err);
+      res.status(500).send('Server error');
+    });
 });
 
 // Authentication middleware.
@@ -178,9 +191,6 @@ const auth = (req, res, next) => {
   next();
 };
 app.use(auth);
-
-
-
 
 app.post('/add', (req, res)=> {
   const course_id = req.body.class;
