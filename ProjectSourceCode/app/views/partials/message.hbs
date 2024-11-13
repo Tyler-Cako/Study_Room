@@ -1,5 +1,7 @@
-{{#if message}}
-  <div class="alert alert-{{#if error}}danger{{else}}success{{/if}}" role="alert">
-    {{ message }}
-  </div>
-{{/if}}
+<div class="message"></div>
+    <div class="message-info row">
+        <p class="sender">{{sender}}</p>
+        <p class="timestamp">{{timestamp}}</p>
+    </div>
+    <p class="message-text">{{text}}</p>
+</div>

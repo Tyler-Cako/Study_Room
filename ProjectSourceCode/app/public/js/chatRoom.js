@@ -37,10 +37,30 @@ getUsernameAndRoom().then(data => {
 
     socket.on('chatMessage', (msg) => {
         console.log(messages);
-        const item = document.createElement('li');
-        item.textContent = `User ${msg.id}: ${msg.msg}`;
-        messages.appendChild(item);
-        window.scrollTo(0, document.body.scrollHeight);
+        const msgEl = document.createElement('div');
+        msgEl.classList = "message";
+
+        msgInfo = document.createElement('div');
+        msgInfo.classList = "message-info row";
+        msgEl.appendChild(msgInfo);
+
+        sender = document.createElement('p');
+        sender.classList = "sender";
+        sender.textContent = msg.id;
+        msgInfo.appendChild(sender);
+
+        timestamp = document.createElement('p');
+        timestamp.classList = "timestamp";
+        timestamp.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        msgInfo.appendChild(timestamp);
+
+        msgText = document.createElement('p');
+        msgText.classList = "message-text";
+        msgText.textContent = msg.msg;
+        msgEl.appendChild(msgText);
+
+        messages.appendChild(msgEl);
+        messages.scrollTo(0, document.body.scrollHeight);
     });
 
     socket.on('userDisconnect', (data) => {

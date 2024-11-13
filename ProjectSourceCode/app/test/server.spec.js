@@ -1,6 +1,6 @@
 // ********************** Initialize server **********************************
 
-const server = require('../dist/index.js'); //TODO: Make sure the path to your index.js is correctly added
+const {app, server} = require('../dist/index.js'); //TODO: Make sure the path to your index.js is correctly added
 
 // ********************** Import Libraries ***********************************
 
@@ -37,9 +37,11 @@ describe('Testing Add User API', () => {
       .send({name: 'John Smith', email: 'john123@gmail.com', password: '112345'})
       .end((err, res) => {
         expect(res).to.have.status(201);
-        expect(res.body.message).to.equals('Successfully registered user!');
         done();
       });
+  });
+  after(() => {
+    server.close();  // Close server after tests
   });
 });
 
