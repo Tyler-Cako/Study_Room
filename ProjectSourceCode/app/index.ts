@@ -33,7 +33,7 @@ app.set('view engine', 'handlebars');
 
 // set Session
 const sessionOptions: SessionOptions = {
-  secret: process.env.SESSION_SECRET as string,
+  secret: "secret_token", //process.env.SESSION_SECRET as string,
   resave: false,
   saveUninitialized: true,
 }
@@ -55,10 +55,11 @@ app.use(
 
 // Authentication middleware.
 const auth = (req: Request, res: Response, next: NextFunction): void => {
-  if (!req.session.user) {
-    return res.redirect('pages/login.hbs');
+  if (req.session.user) {
+    next();
+  } else {
+    res.redirect('/login');
   }
-  next();
 };
 
 // <---- TEST API ROUTES ---->
@@ -115,15 +116,11 @@ db.connect()
 
 // <---- ACTUAL API ROUTES ---->
 app.get('/', auth, function (req, res) {
-    res.render('pages/chat.hbs');
-});
-
-app.get('/', function (req, res) {
-  res.redirect('pages/login.hbs')
+    res.redirect('/chat');
 });
 
 app.get('/register', (req, res) => {
-    res.render('pages/register.hbs');
+  res.render('pages/register.hbs');
 });
 
 app.post('/register', async (req: Request, res: Response): Promise<void> => {
@@ -156,25 +153,30 @@ interface User {
   email: string,
 };
 
-app.get('/chat', (req, res) => {
-  var q = "SELECT * FROM student_to_class stc JOIN class c ON stc.class_id = c.class_id WHERE stc.student_id = $1;";
-  db.manyOrNone(q, [req.session.id]).then( classes => {   // TODO: replace session.id with student_id
-    console.log(classes);
-    if (classes.length == 0){
-      return res.redirect('add_class');
-    }
-    else{
-      var firstClassID = classes[0].class_id;
-      q = "SELECT * FROM messages m JOIN student s ON m.student_id = s.student_id WHERE m.class_id = $1;";
-      db.manyOrNone(q, [firstClassID]).then( messages => {
-        console.log(messages);
-        res.render('pages/chat.hbs', {
-          messages: messages,
-          classes: classes
+app.get('/chat', auth,(req, res) => {
+  if(req.session.user.student_id){
+    var q = "SELECT * FROM student_to_class stc JOIN class c ON stc.class_id = c.class_id WHERE stc.student_id = $1;";
+    db.manyOrNone(q, [req.session.user.student_id]).then( classes => {
+      console.log(classes);
+      if (classes.length == 0){
+        return res.redirect('/add_class');
+      }
+      else{
+        var firstClassID = classes[0].class_id;
+        q = "SELECT * FROM messages m JOIN student s ON m.student_id = s.student_id WHERE m.class_id = $1;";
+        db.manyOrNone(q, [firstClassID]).then( messages => {
+          console.log(messages);
+          res.render('pages/chat.hbs', {
+            messages: messages,
+            classes: classes
+          });
         });
-      });
-    }
-  });
+      }
+    });
+  }
+  else{
+    res.redirect("/login");
+  }
 });
 
 app.get('/login', (req, res) => {
