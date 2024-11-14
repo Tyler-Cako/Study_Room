@@ -32,16 +32,18 @@
         <div id="content">
             <div id="sidebar" class="d-flex flex-column flex-shrink-0 p-3" >
                 <ul class="nav nav-pills flex-column mb-auto">
-                    <button class="class-switch focused" onclick="changeClass(this)">CSCI 1111</button>
+                    {{!-- <button class="class-switch focused" onclick="changeClass(this)">CSCI 1111</button>
                     <button class="class-switch" onclick="changeClass(this)">CSCI 2222</button>
                     <button class="class-switch" onclick="changeClass(this)">CSCI 3333</button>
                     <button class="class-switch" onclick="changeClass(this)">CSCI 4444</button>
-                    <button class="class-switch" onclick="changeClass(this)">CSCI 5555</button>
+                    <button class="class-switch" onclick="changeClass(this)">CSCI 5555</button> --}}
+                    {{>course_btns}}
                 </ul>
             </div>
     
             <div id="chat-window">
                 <div class="w-75" id="message-history">
+                    {{>messages}}
                 </div>
                 
                 <form class="w-75" id="send-message-form" action="">
