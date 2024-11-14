@@ -140,7 +140,7 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
   ])
 
     .then((data: any) => {
-      res.status(201).json({});
+      res.status(201);
       res.redirect('/login');
     })
     .catch((err: Error) => {
@@ -190,7 +190,8 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
 
         res.redirect('/chat');
       } else {
-        res.send('Password does not match email');
+        console.log('Password does not match email');
+        res.redirect('/login');
       }
     })
     .catch((err: Error) => {
