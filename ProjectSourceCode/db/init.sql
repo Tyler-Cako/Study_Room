@@ -50,6 +50,51 @@ INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 227
 
 INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 2400 - Computer Systems', 'TTh', 660, 735, 100);
 
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3104 - Algorithms', 'TTh', 570, 645, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3104 - Algorithms', 'MWF', 675, 725, 200);
+
 INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3155 - Principles of Programming Languages', 'TTh', 570, 645, 100);
 
 INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3308 - Software Development Methods and Tools', 'MW', 480, 530, 100);
+
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 2820 - Linear Algebra with Computer Science Applications', 'MWF', 545, 595, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 2824 - Discrete Structures', 'MWF', 610, 660, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3002 - 
+Fundamentals of Human Computer Interaction', 'TTh', 750, 825, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3010 - Intensive Programming Workshop', 'TTh', 840, 915, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3022 - Introduction to Data Science with Probability and Statistics', 'MWF', 610, 660, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3090 - Introduction to Quantum Computing', 'MWF', 870, 800, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3112 - Professional Development in Computer Science', 'W', 740, 790, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3202 - 
+Introduction to Artificial Intelligence', 'MWF', 870, 920, 100);
+
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3287 - 
+Design and Analysis of Database Systems', 'MWF', 660, 735, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3287 - 
+Design and Analysis of Database Systems', 'MWF', 1020, 1095, 200);
+
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3302 - 
+Introduction to Robotics', 'MWF', 930, 1005, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3593 - Computer Organization', 'MWF', 970, 1020, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3656 - Numerical Computation', 'MWF', 675, 725, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3702 - 
+Cognitive Science', 'TTh', 750, 825, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3753 - Design and Analysis of Operating Systems', 'TTh', 660, 735, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 3832 - Natural Language Processing', 'MWF', 545, 559530, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4022 - Advanced Data Science', 'MWF', 480, 530, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4113 - Linux System Administration', 'MWF', 750, 825, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4200 - 
+Introduction to Wireless Systems', 'MWF', 750, 825, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4239 - Advanced Computer Graphics', 'TTH', 930, 1005, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4240 - Introduction to Blockchain', 'T', 1020, 1170, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4273 - Network Systems', 'TTh', 840, 915, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4302 - 
+Advanced Robotics', 'MWF', 545, 595, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4444 - Algorithms and Data Structures for Analyzing DNA', 'TTh', 690, 765, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4446 - Chaotic Dynamics', 'TTh', 570, 645, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4448 - Object-Oriented Analysis and Design', 'MWF', 610, 660, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4555 - Compiler Construction', 'TTh', 840, 915, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4622 - Machine Learning', 'MWF', 805, 855, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4722 - 
+Computer Vision', 'MWF', 675, 725, 100);
+INSERT into class (name, days, start_time, stop_time, section) VALUES ('CSCI 4809 - Computer Animation', 'Th', 1020, 1170, 100);
