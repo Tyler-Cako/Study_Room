@@ -146,7 +146,7 @@ app.get('/chat', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  res.render('login');
+  res.render('pages/login.hbs');
 });
 
 app.post('/login', (req, res) => {
