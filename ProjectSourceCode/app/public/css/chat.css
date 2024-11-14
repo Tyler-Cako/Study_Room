@@ -8,6 +8,7 @@ ul.navbar-nav{
     padding: 0.25rem;
     margin: 0.25rem;
     transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
+    font-size: medium;
 }
 .class-switch.focused, .class-switch:hover{
     box-shadow: inset 100px 0 0 100px var(--bs-secondary);
