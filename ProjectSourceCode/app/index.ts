@@ -33,7 +33,7 @@ app.set('view engine', 'handlebars');
 
 // set Session
 const sessionOptions: SessionOptions = {
-  secret: process.env.SESSION_SECRET as string,
+  secret: "secret_token", //process.env.SESSION_SECRET as string,
   resave: false,
   saveUninitialized: true,
 }
@@ -55,10 +55,11 @@ app.use(
 
 // Authentication middleware.
 const auth = (req: Request, res: Response, next: NextFunction): void => {
-  if (!req.session.user) {
-    return res.redirect('pages/login.hbs');
+  if (req.session.user) {
+    next();
+  } else {
+    res.redirect('/login');
   }
-  next();
 };
 
 // <---- TEST API ROUTES ---->
@@ -115,15 +116,11 @@ db.connect()
 
 // <---- ACTUAL API ROUTES ---->
 app.get('/', auth, function (req, res) {
-    res.render('pages/chat.hbs');
-});
-
-app.get('/', function (req, res) {
-  res.redirect('pages/login.hbs')
+    res.redirect('/chat');
 });
 
 app.get('/register', (req, res) => {
-    res.render('pages/register.hbs');
+  res.render('pages/register.hbs');
 });
 
 app.post('/register', async (req: Request, res: Response): Promise<void> => {
@@ -156,7 +153,7 @@ interface User {
   email: string,
 };
 
-app.get('/chat', (req, res) => {
+app.get('/chat', auth, function (req, res) {
   res.render('pages/chat.hbs');
 });
 
