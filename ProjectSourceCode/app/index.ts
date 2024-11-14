@@ -115,6 +115,15 @@ app.get('/register', (req, res) => {
 
 app.post('/register', async (req, res) => {
   //hash the password using bcrypt library
+  const { name, email } = req.body;
+  if (typeof name !== 'string') {
+    res.status(400).json({ message: 'Invalid input'});
+    return;
+  }
+  if (typeof email !== 'string' || !email.includes('@')) {
+    res.status(400).json({ message: 'Invalid input'});
+    return;
+  }
   const hash = await bcrypt.hash(req.body.password, 10);
   
   const query = 
@@ -130,7 +139,7 @@ app.post('/register', async (req, res) => {
       res.status(201).json({});
     })
     .catch(function (err) {
-      console.log(err);
+      console.log(err)
     });
 });
 
@@ -153,7 +162,7 @@ app.post('/login', (req, res) => {
   var email = req.body.email;
   var current_student = `select * from student where email = '${email}' LIMIT 1;`;
 
-  db.one(current_student)
+  db.oneOrNone(current_student)
     .then(async data => {
       // check if password from request matches with password in DB
       const match = await bcrypt.compare(req.body.password, data.password);
@@ -163,7 +172,11 @@ app.post('/login', (req, res) => {
         // req.session.id = data.student_id;
         req.session.save();
 
-        res.redirect('chat');
+        //res.redirect('chat'); //add back once rendering fixed
+        res.status(302) //temporary since rendering is broken
+      }
+      else {
+        res.status(401).send('Invalid email or password')
       }
     })
 });
