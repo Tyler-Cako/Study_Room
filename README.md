@@ -39,3 +39,7 @@ To be implemented...
 ### Deployed application
 
 To be implemented...
+
+
+##### How to clear docker volumes:
+docker-compose down -v
