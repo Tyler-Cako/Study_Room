@@ -23,7 +23,7 @@ const io = new Server(server);
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'dist')));
-app.set('views', path.join(__dirname, '../views'));\
+app.set('views', path.join(__dirname, '../views'));
 app.use(bodyParser.json());
 app.use(express.json());
 
@@ -33,7 +33,7 @@ app.set('view engine', 'handlebars');
 
 // set Session
 const sessionOptions: SessionOptions = {
-  secret: process.env.SESSION_SECRET as string,
+  secret: 'secret_token',
   resave: false,
   saveUninitialized: true,
 }
@@ -127,6 +127,16 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req: Request, res: Response): Promise<void> => {
+  const { name, email } = req.body;
+  if (typeof name !== 'string') {
+    res.status(400).json({ message: 'Invalid input'});
+    return;
+  }
+  if (typeof email !== 'string' || !email.includes('@')) {
+    res.status(400).json({ message: 'Invalid input'});
+    return;
+  }
+
   //hash the password using bcrypt library
   const hash: string = await bcrypt.hash(req.body.password, 10);
   
@@ -145,6 +155,7 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
     })
     .catch((err: Error) => {
       console.log(err);
+      res.status(400);
       res.redirect('/register');
     });
 });
@@ -174,7 +185,7 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
   const query: string = 'select * from student where student.email = $1 LIMIT 1;';
   const values: string[] = [email];
 
-  db.one(query, values)
+  db.oneOrNone(query, values)
     .then(async (data: { student_id: number; name: string; email: string; password: string }) => {
       // check if password from request matches with password in DB
       const match: boolean = await bcrypt.compare(password, data.password);
@@ -191,7 +202,7 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
 
         res.redirect('/chat');
       } else {
-        console.log('Password does not match email');
+        console.log('Incorrect email or password');
         res.redirect('/login');
       }
     })
