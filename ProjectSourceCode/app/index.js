@@ -1,20 +1,26 @@
-import express from 'express';
-import bcrypt from 'bcryptjs';
-import session from 'express-session';
-import path, { dirname } from 'path';
-import db from './db';
-import { Server } from 'socket.io';
-import handlebars from 'handlebars';
-import { engine } from 'express-handlebars';
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const session = require('express-session');
+const path = require('path');
+const dirname = path.dirname;
+const db = require('./db');
+const { Server } = require('socket.io');
+const handlebars = require('handlebars');
+const engine = require('express-handlebars');
+const { createServer } = require("http");
+const { fileURLToPath } = require('url');
 
-const PORT = process.env.PORT || 3000;
+require('dotenv').config({ path : __dirname + "/../.env"});
+
+const PORT = process.env.PORT || 3001;
 
 const app = express();
-const server = require('http').createServer(app, {
-    cors: {
-        origin: process.env.NODE_ENV === "production" ? false :
-        [`http://localhost:${PORT}`]
-    }
+
+const server = createServer(app, {
+  cors: {
+      origin: process.env.NODE_ENV === "production" ? false :
+      [`http://localhost:${PORT}`]
+  }
 });
 const io = new Server(server);
 
@@ -26,8 +32,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
 
 // Register `handlebars` as our view engine using its bound `engine()` function.
-app.engine('handlebars', engine());
-app.set('view engine', 'handlebars');
+//app.engine('handlebars', engine());
+app.set('view engine', 'hbs');
 
 // set Session
 app.use(
@@ -195,8 +201,8 @@ io.on('connection', (socket) => {
     // Join a room
     socket.on('joinRoom', ({ username, room }) => {
         socket.join(room);
-        (socket as any).username = username;
-        (socket as any).room = room;
+        socket.username = username;
+        socket.room = room;
         console.log(`User ${username} joined room ${room}`);
 
         // Emit to the room that a user has joined
@@ -208,7 +214,7 @@ io.on('connection', (socket) => {
         io.to(room).emit('chatMessage', id_msg);
     });
     socket.on('disconnect', () => {
-        const { username, room } = (socket as any);
+        const { username, room } = socket;
         if (room) {
             console.log(`User ${username} disconnected from room ${room}`);
             socket.to(room).emit('userDisconnect', { id: socket.id, username: username });
@@ -219,5 +225,3 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
     console.log(`App listening on port: ${PORT}`);
 });
-
-module.exports = { app, server }

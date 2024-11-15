@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Class-based real time group chat",
   "main": "dist/index.js",
+  "type": "commonjs",
   "scripts": {
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon index.ts\"",
-    "start": "node dist/index.js",
-    "build": "tsc",
+    "dev": "concurrently \"nodemon index.js\"",
+    "start": "node index.js",
     "prestart": "npm install",
-    "test": "mocha --require ts-node/register ./test/**/*.js",
-    "testandrun": "npm run prestart && npm run build && npm run test && npm start"
+    "test": "mocha 'test/**/*.js'",
+    "testandrun": "npm run prestart && npm run test && npm start"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^2.4.3",
     "chai": "^5.1.2",
     "dotenv": "^16.4.5",
@@ -34,18 +33,12 @@
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/express-session": "^1.17.3",
-    "@types/node": "^22.8.4",
-    "@types/socket.io": "^3.0.2",
-    "@types/socket.io-client": "^3.0.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
     "concurrently": "^9.0.1",
+    "copyfiles": "^2.4.1",
     "mocha": "^6.2.2",
     "nodemon": "^3.1.7",
-    "npm-run-all": "^4.1.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "npm-run-all": "^4.1.5"
   }
 }

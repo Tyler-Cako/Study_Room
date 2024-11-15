@@ -1,12 +1,13 @@
 // ********************** Initialize server **********************************
 
-const {app, server} = require('../dist/index.js'); //TODO: Make sure the path to your index.js is correctly added
+const {app, server} = require('../index.js'); //TODO: Make sure the path to your index.js is correctly added
 
 // ********************** Import Libraries ***********************************
 const bcrypt = require('bcryptjs');
-const db = require('../dist/db.js').default;
-const chai = require('chai'); // Chai HTTP provides an interface for live integration testing of the API's.
+const db = require('../db.js');
+//const chai = require('chai'); // Chai HTTP provides an interface for live integration testing of the API's.
 const chaiHttp = require('chai-http');
+const chai = require('chai')
 chai.should();
 chai.use(chaiHttp);
 const {assert, expect} = chai;

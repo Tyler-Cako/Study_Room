@@ -1,4 +1,4 @@
-import pgPromise from 'pg-promise';
+const pgPromise = require('pg-promise');
 
 const pgp = pgPromise({});
 
@@ -13,4 +13,4 @@ const dbConfig = {
 
 const db = pgp(dbConfig);
 
-export default db;
+module.exports = db;
