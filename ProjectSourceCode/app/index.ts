@@ -4,7 +4,6 @@ import session, { SessionOptions, SessionData } from 'express-session';
 import path, { dirname } from 'path';
 import db from './db';
 import { Server } from 'socket.io';
-import handlebars from 'handlebars';
 import { engine } from 'express-handlebars';
 import bodyParser from 'body-parser'
 
@@ -21,14 +20,19 @@ const io = new Server(server);
 
 // app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, 'dist')));
 app.set('views', path.join(__dirname, '../views'));
 app.use(express.json());
 
-// Register `handlebars` as our view engine using its bound `engine()` function.
-app.engine('handlebars', engine());
-app.set('view engine', 'handlebars');
+// Register `handlebars` as view engine
+app.engine('.hbs', engine({
+  extname: '.hbs',
+  defaultLayout: false,
+  partialsDir: path.join(__dirname, '../views/partials'), 
+}));
+app.set('view engine', '.hbs');
+console.log('Partials directory:', path.join(__dirname, '../views/partials'));
 
 // set Session
 const sessionOptions: SessionOptions = {
@@ -55,7 +59,7 @@ app.use(
 // Authentication middleware.
 const auth = (req: Request, res: Response, next: NextFunction): void => {
   if (!req.session.user) {
-    return res.redirect('pages/login.hbs');
+    return res.render('pages/login.hbs');
   }
   next();
 };
@@ -254,10 +258,9 @@ app.post('/add', (req, res)=> {
       [student_id, class_id]
     );  
     console.log('Insert successful');
-    return { message: 'Class successfully added'}
   })
   .then(result => {
-    res.render('pages/add_class.hbs', { message: result.message, error: false}); // Success message
+    res.render('pages/add_class.hbs', { message: `Successfully added course ${class_code}`}); // Success message
   })
   .catch(err => {
     res.render('pages/add_class.hbs', { message: err.message, error: true }); // Error message
