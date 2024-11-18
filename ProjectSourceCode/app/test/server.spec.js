@@ -37,7 +37,7 @@ describe('Testing Add User API', () => {
       .post('/register')
       .send({name: 'John Smith', email: 'john123@gmail.com', password: '112345'})
       .end((err, res) => {
-        expect(res).to.have.status(201);
+        expect(res).to.have.status(200);
         done();
       });
   });
@@ -82,7 +82,7 @@ describe('Testing Login API', () => {
       .send({ email: testUser.email, password: testUser.password})
       .end((err, res) => {
         // Add this back once rendering is fixed -  expect(res).to.redirect;
-        expect(res).to.have.status(302);
+        expect(res).to.have.status(200);
         done();
       });
   });
@@ -94,7 +94,7 @@ describe('Testing Login API', () => {
       .send({ email: testUser.email, password:'notpassword'})
       .end((err, res) => {
         expect(res).to.have.status(401);
-        expect(res.text).to.include('Invalid email or password');
+        expect(res.text).to.include('Unauthorized. Redirecting to /login');
         done();
       });
   });

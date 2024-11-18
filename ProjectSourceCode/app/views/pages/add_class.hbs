@@ -11,7 +11,7 @@
             <div class="container-fluid">
             <ul class="navbar-nav d-flex flex-row">
               <li class="nav-item">
-                <a style="color:white;" class="nav-link" href="chat.html">Home</a>
+                <a style="color:white;" class="nav-link" href="/chat">Home</a>
               </li>
             </ul>
             <a class="navbar-brand mx-auto" href="#">Register Classes </a>
@@ -22,7 +22,9 @@
         <div class="centered-div">
             <form action="/add" method="post">
                 <p style="color:white;"> Please enter the name of the course you want to add. </p>
-              <input type="text" id="class" placeholder="(CSCI 1234)"> <br>
+              <input type="text" name="class" id="class" placeholder="(CSCI 1234)" required> <br>
+              <input type="number" name="section" placeholder="Section Number" required> <br> 
+              <input type="text" name="semester" placeholder="Semester (SP25)" required> <br>
               <button style="font-size:20px;" id="button" type="submit" class="btn btn-success"> Add Class </button>
             </form>
         </div>

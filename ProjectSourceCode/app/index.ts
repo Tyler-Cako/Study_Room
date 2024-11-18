@@ -24,7 +24,6 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'dist')));
 app.set('views', path.join(__dirname, '../views'));
-app.use(bodyParser.json());
 app.use(express.json());
 
 // Register `handlebars` as our view engine using its bound `engine()` function.
@@ -132,7 +131,9 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req: Request, res: Response): Promise<void> => {
-  const { name, email } = req.body;
+  const name = req.body.name
+  const email = req.body.email
+
   if (typeof name !== 'string') {
     res.status(400).json({ message: 'Invalid input'});
     return;
@@ -208,45 +209,58 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
         res.redirect('/chat');
       } else {
         console.log('Incorrect email or password');
-        res.redirect('/login');
+        res.redirect(401, '/login');
       }
     })
     .catch((err: Error) => {
       console.log(err);
-      res.redirect('/login');
+      res.redirect(401, '/login');
     });
 });
 
+app.get('/add', (req, res) => {
+  res.render('pages/add_class.hbs');
+});
+
 app.post('/add', (req, res)=> {
-  const course_id = req.body.class;
+
+  const class_code = req.body.class;
+  const section = req.body.section
+  const semester = req.body.semester
   const student_id = req.session.user.student_id;
 
   db.tx(async t => {
-    const {is_added} = await t.one(
-      `SELECT
-        * from student_to_class 
-      WHERE 
-      course_id = $1 AND
-      student_id = $2`,
-      [course_id, student_id]
+    const classFound = await t.oneOrNone(
+      `SELECT class_id FROM class WHERE class_code = $1 AND section = $2 AND semester = $3`, 
+      [class_code, section, semester]
     );
+    console.log('Class Found', classFound);
+    if (!classFound) {
+      throw new Error("Class not found");
+    }
+    const class_id = classFound.class_id;
+    const is_added = await t.oneOrNone(
+      `SELECT 1 from student_to_class WHERE student_id = $1 AND class_id = $2`,
+      [student_id, class_id]
+    );
+    console.log('Already Added Check:', is_added); // Log this
 
     if (is_added) {
-      throw new Error("You are already in this chat.");
+      throw new Error('You are already have this course added');
     }
 
-    // There are either no prerequisites, or all have been taken.
     await t.none(
-      'INSERT INTO student_to_class (course_id, student_id) VALUES ($1, $2);',
-      [course_id, student_id]
-    );
-    return `Successfully added to the chat for course ${course_id}`;
+      'INSERT INTO student_to_class (student_id, class_id) VALUES ($1, $2);',
+      [student_id, class_id]
+    );  
+    console.log('Insert successful');
+    return { message: 'Class successfully added'}
   })
-  .then(message => {
-    res.render('add_class', { message, error: false }); // Success message
+  .then(result => {
+    res.render('pages/add_class.hbs', { message: result.message, error: false}); // Success message
   })
   .catch(err => {
-    res.render('add_class', { message: err.message, error: true }); // Error message
+    res.render('pages/add_class.hbs', { message: err.message, error: true }); // Error message
   });
 });
 
