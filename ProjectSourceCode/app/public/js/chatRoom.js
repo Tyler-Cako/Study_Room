@@ -149,7 +149,7 @@ function changeClass(btn, newClass) {
 
     // Leave the current room
     socket.emit('leaveRoom', { room: currentRoom });
-
+    messages.innerHTML = '';
     // Update the current room
     currentRoom = newClass;
 
