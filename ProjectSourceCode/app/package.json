@@ -4,10 +4,12 @@
   "description": "Class-based real time group chat",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon index.ts\"",
     "start": "node dist/index.js",
-    "build": "tsc"
+    "build": "tsc",
+    "prestart": "npm install",
+    "test": "mocha --require ts-node/register ./test/**/*.js",
+    "testandrun": "npm run prestart && npm run build && npm run test && npm start"
   },
   "repository": {
     "type": "git",
@@ -38,8 +40,12 @@
     "@types/node": "^22.8.4",
     "@types/socket.io": "^3.0.2",
     "@types/socket.io-client": "^3.0.0",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
     "concurrently": "^9.0.1",
+    "mocha": "^6.2.2",
     "nodemon": "^3.1.7",
+    "npm-run-all": "^4.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3"
   }

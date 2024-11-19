@@ -4,7 +4,6 @@ import session, { SessionOptions, SessionData } from 'express-session';
 import path, { dirname } from 'path';
 import db from './db';
 import { Server } from 'socket.io';
-import handlebars from 'handlebars';
 import { engine } from 'express-handlebars';
 import bodyParser from 'body-parser'
 
@@ -21,19 +20,23 @@ const io = new Server(server);
 
 // app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, 'dist')));
-app.set('views', path.join(__dirname, 'views'));
-app.use(bodyParser.json());
+app.set('views', path.join(__dirname, '../views'));
 app.use(express.json());
 
-// Register `handlebars` as our view engine using its bound `engine()` function.
-app.engine('handlebars', engine());
-app.set('view engine', 'handlebars');
+// Register `handlebars` as view engine
+app.engine('.hbs', engine({
+  extname: '.hbs',
+  defaultLayout: false,
+  partialsDir: path.join(__dirname, '../views/partials'), 
+}));
+app.set('view engine', '.hbs');
+console.log('Partials directory:', path.join(__dirname, '../views/partials'));
 
 // set Session
 const sessionOptions: SessionOptions = {
-  secret: "secret_token", //process.env.SESSION_SECRET as string,
+  secret: 'secret_token',
   resave: false,
   saveUninitialized: true,
 }
@@ -55,14 +58,17 @@ app.use(
 
 // Authentication middleware.
 const auth = (req: Request, res: Response, next: NextFunction): void => {
-  if (req.session.user) {
-    next();
-  } else {
-    res.redirect('/login');
+  if (!req.session.user) {
+    return res.render('pages/login.hbs');
   }
+  next();
 };
 
 // <---- TEST API ROUTES ---->
+
+app.get('/welcome', (req, res) => {
+  res.json({status: 'success', message: 'Welcome!'});
+});
 
 app.post('/test', function (req, res) {
     const query =
@@ -113,10 +119,15 @@ db.connect()
     console.log('ERROR:', error.message || error);
   });
 
+// HANDLEBARS ROUTES // 
+app.get('/add-class-page', (req, res) => {
+  res.render('add_class', { title: 'Add Class', user: req.session.user, layout: false });
+  
+});
 
 // <---- ACTUAL API ROUTES ---->
 app.get('/', auth, function (req, res) {
-    res.redirect('/chat');
+  res.redirect('/chat');
 });
 
 app.get('/register', (req, res) => {
@@ -124,6 +135,18 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req: Request, res: Response): Promise<void> => {
+  const name = req.body.name
+  const email = req.body.email
+
+  if (typeof name !== 'string') {
+    res.status(400).json({ message: 'Invalid input'});
+    return;
+  }
+  if (typeof email !== 'string' || !email.includes('@')) {
+    res.status(400).json({ message: 'Invalid input'});
+    return;
+  }
+
   //hash the password using bcrypt library
   const hash: string = await bcrypt.hash(req.body.password, 10);
   
@@ -142,9 +165,11 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
     })
     .catch((err: Error) => {
       console.log(err);
+      res.status(400);
       res.redirect('/register');
     });
 });
+
 
 // Login
 interface User {
@@ -192,7 +217,7 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
   const query: string = 'select * from student where student.email = $1 LIMIT 1;';
   const values: string[] = [email];
 
-  db.one(query, values)
+  db.oneOrNone(query, values)
     .then(async (data: { student_id: number; name: string; email: string; password: string }) => {
       // check if password from request matches with password in DB
       const match: boolean = await bcrypt.compare(password, data.password);
@@ -209,19 +234,60 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
 
         res.redirect('/chat');
       } else {
-        console.log('Password does not match email');
-        res.redirect('/login');
+        console.log('Incorrect email or password');
+        res.redirect(401, '/login');
       }
     })
     .catch((err: Error) => {
       console.log(err);
-      res.redirect('/login');
+      res.redirect(401, '/login');
     });
 });
 
+app.get('/add', (req, res) => {
+  res.render('pages/add_class.hbs');
+});
 
+app.post('/add', (req, res)=> {
 
-// app.use(auth);
+  const class_code = req.body.class;
+  const section = req.body.section
+  const semester = req.body.semester
+  const student_id = req.session.user.student_id;
+
+  db.tx(async t => {
+    const classFound = await t.oneOrNone(
+      `SELECT class_id FROM class WHERE class_code = $1 AND section = $2 AND semester = $3`, 
+      [class_code, section, semester]
+    );
+    console.log('Class Found', classFound);
+    if (!classFound) {
+      throw new Error("Class not found");
+    }
+    const class_id = classFound.class_id;
+    const is_added = await t.oneOrNone(
+      `SELECT 1 from student_to_class WHERE student_id = $1 AND class_id = $2`,
+      [student_id, class_id]
+    );
+    console.log('Already Added Check:', is_added); // Log this
+
+    if (is_added) {
+      throw new Error('You are already have this course added');
+    }
+
+    await t.none(
+      'INSERT INTO student_to_class (student_id, class_id) VALUES ($1, $2);',
+      [student_id, class_id]
+    );  
+    console.log('Insert successful');
+  })
+  .then(result => {
+    res.render('pages/add_class.hbs', { message: `Successfully added course ${class_code}`}); // Success message
+  })
+  .catch(err => {
+    res.render('pages/add_class.hbs', { message: err.message, error: true }); // Error message
+  });
+});
 
 io.on('connection', (socket) => {
     // Join a room
@@ -251,3 +317,5 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
     console.log(`App listening on port: ${PORT}`);
 });
+
+module.exports = { app, server }
