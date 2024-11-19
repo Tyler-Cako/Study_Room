@@ -137,6 +137,8 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
   ])
 
     .then((data: any) => {
+      console.log(`Registered user with the following credientials:\n
+        name: ${req.body.name}, email: ${req.body.email}`)
       res.status(201);
       res.redirect('/login');
     })
@@ -197,7 +199,13 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-
+app.get('/user-data', auth, (req: Request, res: Response) => {
+  if (req.session.user) {
+    res.json(req.session.user);
+  } else {
+    res.status(401).json({ error: 'User not logged in' });
+  }
+});
 
 // app.use(auth);
 
@@ -212,13 +220,31 @@ io.on('connection', (socket) => {
         // Emit to the room that a user has joined
         socket.to(room).emit('userJoined', { id: socket.id, msg: `${username} has joined the room` });
     });
-    // Listen for chat messages
-    socket.on('chatMessage', ({ room, msg }) => {
-        const id_msg = { id: socket.id, msg: msg };
-        io.to(room).emit('chatMessage', id_msg);
+    socket.on('leaveRoom', ({ room }) => {
+        socket.leave(room);
+        console.log(`User ${socket.id} left room ${room}`);
     });
-    socket.on('disconnect', () => {
-        const { username, room } = (socket as any);
+    // Listen for chat messages
+    socket.on('chatMessage', async ({ room, msg, student_id, display_name }) => {
+      const time = new Date();
+
+      // Add to the database
+      try {
+          await db.none('INSERT INTO messages(student_id, class_id, message_body, created_at) VALUES($1, $2, $3, $4)', 
+                        [student_id, room, msg, time]);
+      } catch (error) {
+          console.error('Error adding message to the database:', error);
+      }
+  
+      // Emit the message to the room
+      io.to(room).emit('chatMessage', {
+        display_name: display_name,
+        msg: msg,
+        time: time
+    });
+    });
+    socket.on('disconnect', (username) => {
+        const { room } = (socket as any);
         if (room) {
             console.log(`User ${username} disconnected from room ${room}`);
             socket.to(room).emit('userDisconnect', { id: socket.id, username: username });

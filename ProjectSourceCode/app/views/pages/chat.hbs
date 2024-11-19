@@ -67,6 +67,13 @@
         titleEl = document.getElementById("class-name");
         new_title = btn.innerHTML;
         titleEl.innerHTML = new_title;
+        
+        socket.emit('leaveRoom', { room: currentRoom });
+        // Update the current room
+        currentRoom = newRoom;
+        // Emit joinRoom event for the new room
+        socket.emit('joinRoom', { username, room: newRoom });
+
         // Switch between message lists once implemented
     }
 
