@@ -3,30 +3,54 @@ const form = document.getElementById('send-message-form');
 const input = document.getElementById('input-text');
 const messages = document.getElementById('message-history');
 
-async function getUsernameAndRoom() {
-    // const response = await fetch('someapi');
-    // const data = await response.json();
-    const params = new URLSearchParams(window.location.search);
-    const data = { user: 'User', room: params.get('room') };
-    return data;
-}
 
-getUsernameAndRoom().then(data => {
-    const username = data.user;
-    const room = data.room;
+let currentRoom = 0; // class_id
+let username;
+let id;
 
+async function getUserData() {
+    try {
+      const response = await fetch('/user-data', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' // Include cookies in the request
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+  
+      const userData = await response.json();
+      return userData;
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return null;
+    }
+  }
+
+getUserData().then(data => {
+    username = data.name;
+    id = data.student_id;
+
+    
     // Join a room
-    socket.emit('joinRoom', { username, room });
-
+    socket.emit('joinRoom', { username, currentRoom });
+    
+    console.log("variables:",username, id, currentRoom)
     form.addEventListener('submit', (e) => {
         console.log(input.value);
         e.preventDefault();
-        if (input.value) {
-            socket.emit('chatMessage', { room: room, msg: input.value });
+        if (input.value && currentRoom != undefined) {
+            socket.emit('chatMessage', { room: currentRoom, msg: input.value, student_id: id, display_name: username});
             input.value = '';
         }
+        else {
+            console.error('Room is undefined');
+        }
     });
-
+    
     socket.on('userJoined', (data) => {
         const item = document.createElement('li');
         item.textContent = `User ${data.id} joined the chat`;
@@ -35,7 +59,7 @@ getUsernameAndRoom().then(data => {
         window.scrollTo(0, document.body.scrollHeight);
     });
 
-    socket.on('chatMessage', (msg) => {
+    socket.on('chatMessage', ({ display_name, msg, time }) => {
         console.log(messages);
         const msgEl = document.createElement('div');
         msgEl.classList = "message";
@@ -46,21 +70,56 @@ getUsernameAndRoom().then(data => {
 
         sender = document.createElement('p');
         sender.classList = "sender";
-        sender.textContent = msg.id;
+        sender.textContent = display_name;
         msgInfo.appendChild(sender);
 
         timestamp = document.createElement('p');
         timestamp.classList = "timestamp";
-        timestamp.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        timestamp.textContent = new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
         msgInfo.appendChild(timestamp);
 
         msgText = document.createElement('p');
         msgText.classList = "message-text";
-        msgText.textContent = msg.msg;
+        msgText.textContent = msg;
         msgEl.appendChild(msgText);
 
         messages.appendChild(msgEl);
         messages.scrollTo(0, document.body.scrollHeight);
+    });
+
+    socket.on('previousMessages', (msgs) => {
+        // same code as whats in onMessage, just populating for each message that was found in db
+        if (Array.isArray(msgs)) {
+            msgs.forEach(({ display_name, message_body, created_at }) => {
+                const msgEl = document.createElement('div');
+                msgEl.classList = "message";
+
+                const msgInfo = document.createElement('div');
+                msgInfo.classList = "message-info row";
+                msgEl.appendChild(msgInfo);
+
+                const sender = document.createElement('p');
+                sender.classList = "sender";
+                sender.textContent = display_name;
+                msgInfo.appendChild(sender);
+
+                const timestamp = document.createElement('p');
+                timestamp.classList = "timestamp";
+                const messageTime = new Date(created_at); // Convert created_at to Date object
+                timestamp.textContent = messageTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                msgInfo.appendChild(timestamp);
+
+                const msgText = document.createElement('p');
+                msgText.classList = "message-text";
+                msgText.textContent = message_body;
+                msgEl.appendChild(msgText);
+
+                messages.appendChild(msgEl);
+            });
+            window.scrollTo(0, document.body.scrollHeight);
+        } else {
+            console.error('Expected an array of messages but received:', msgs);
+        }
     });
 
     socket.on('userDisconnect', (data) => {
@@ -71,5 +130,31 @@ getUsernameAndRoom().then(data => {
         window.scrollTo(0, document.body.scrollHeight);
     });
 }).catch(error => {
-    console.error('Error fetching user and rooms:', error);
+    console.error('Error fetching user data:', error);
+    // Redirect to login page or show an error message
+    window.location.href = '/login';
 });
+
+function changeClass(btn, newClass) {
+    const prev_active_btn = document.querySelector(".class-switch.focused");
+    if (prev_active_btn) {
+        prev_active_btn.className = "class-switch";
+    }
+
+    btn.className = "class-switch focused";
+    
+    const titleEl = document.getElementById("class-name");
+    const new_title = btn.innerHTML;
+    titleEl.innerHTML = new_title;
+
+    // Leave the current room
+    socket.emit('leaveRoom', { room: currentRoom });
+    messages.innerHTML = '';
+    // Update the current room
+    currentRoom = newClass;
+
+    // Join the new room
+    socket.emit('joinRoom', { username, room: currentRoom });
+
+    // Switch between message lists once implemented
+}
