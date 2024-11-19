@@ -54,23 +54,7 @@
                 </form>
             </div>
         </div>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="./js/chatRoom.js"></script>
     </body>
 </html>
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="./js/chatRoom.js"></script>
-<script>
-    function changeClass(btn){
-        prev_active_btn = document.querySelector(".class-switch.focused");
-        prev_active_btn.className = "class-switch";
-
-        btn.className = "class-switch focused";
-        
-        titleEl = document.getElementById("class-name");
-        new_title = btn.innerHTML;
-        titleEl.innerHTML = new_title;
-        // Switch between message lists once implemented
-    }
-
-
-</script>

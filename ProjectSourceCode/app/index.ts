@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response, NextFunction, response } from 'express';
 import bcrypt from 'bcryptjs';
 import session, { SessionOptions, SessionData } from 'express-session';
 import path, { dirname } from 'path';
@@ -20,9 +20,9 @@ const io = new Server(server);
 
 // app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'dist')));
-app.set('views', path.join(__dirname, '../views'));
+app.set('views', path.join(__dirname, 'views'));
 app.use(express.json());
 
 // Register `handlebars` as view engine
@@ -31,7 +31,7 @@ app.engine('.hbs', engine({
   defaultLayout: false,
   partialsDir: path.join(__dirname, '../views/partials'), 
 }));
-app.set('view engine', '.hbs');
+app.set('view engine', 'hbs');
 console.log('Partials directory:', path.join(__dirname, '../views/partials'));
 
 // set Session
@@ -160,6 +160,8 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
   ])
 
     .then((data: any) => {
+      console.log(`Registered user with the following credientials:\n
+        name: ${req.body.name}, email: ${req.body.email}`)
       res.status(201);
       res.redirect('/login');
     })
@@ -244,7 +246,28 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-app.get('/add', (req, res) => {
+app.get('/user-data', auth, (req: Request, res: Response) => {
+  if (req.session.user) {
+    res.json(req.session.user);
+  } else {
+    res.status(401).json({ error: 'User not logged in' });
+  }
+});
+
+app.get('/user-classes', auth, (req: Request, res: Response) => {
+  const student_id = req.session.user.student_id; // Retrieve student_id from session
+  const query_str = "SELECT class_id FROM student_to_class WHERE student_id = $1";
+  const values = [student_id];
+
+  db.manyOrNone(query_str, values)
+    .then((data) => {
+      res.json(data);
+    })
+    .catch((error) => {
+      console.error('Error fetching user classes:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    });
+});app.get('/add', (req, res) => {
   res.render('pages/add_class.hbs');
 });
 
@@ -291,22 +314,48 @@ app.post('/add', (req, res)=> {
 
 io.on('connection', (socket) => {
     // Join a room
-    socket.on('joinRoom', ({ username, room }) => {
+    socket.on('joinRoom', async ({ username, room }) => {
         socket.join(room);
         (socket as any).username = username;
         (socket as any).room = room;
         console.log(`User ${username} joined room ${room}`);
-
+        // Fetch previous messages from the database
+        try {
+            const messages = await db.manyOrNone('SELECT * FROM messages WHERE class_id = $1 ORDER BY created_at ASC', [room]);
+            // Emit previous messages to the user who just joined
+            console.log(messages)
+            socket.emit('previousMessages', messages);
+        } catch (error) {
+            console.error('Error fetching previous messages:', error);
+        }
         // Emit to the room that a user has joined
         socket.to(room).emit('userJoined', { id: socket.id, msg: `${username} has joined the room` });
     });
-    // Listen for chat messages
-    socket.on('chatMessage', ({ room, msg }) => {
-        const id_msg = { id: socket.id, msg: msg };
-        io.to(room).emit('chatMessage', id_msg);
+    socket.on('leaveRoom', ({ room }) => {
+        socket.leave(room);
+        console.log(`User ${socket.id} left room ${room}`);
     });
-    socket.on('disconnect', () => {
-        const { username, room } = (socket as any);
+    // Listen for chat messages
+    socket.on('chatMessage', async ({ room, msg, student_id, display_name }) => {
+      const time = new Date();
+
+      // Add to the database
+      try {
+          await db.none('INSERT INTO messages(student_id, class_id, message_body, created_at) VALUES($1, $2, $3, $4)', 
+                        [student_id, room, msg, time]);
+      } catch (error) {
+          console.error('Error adding message to the database:', error);
+      }
+  
+      // Emit the message to the room
+      io.to(room).emit('chatMessage', {
+        display_name: display_name,
+        msg: msg,
+        time: time
+    });
+    });
+    socket.on('disconnect', (username) => {
+        const { room } = (socket as any);
         if (room) {
             console.log(`User ${username} disconnected from room ${room}`);
             socket.to(room).emit('userDisconnect', { id: socket.id, username: username });
