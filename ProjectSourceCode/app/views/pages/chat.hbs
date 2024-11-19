@@ -32,11 +32,11 @@
         <div id="content">
             <div id="sidebar" class="d-flex flex-column flex-shrink-0 p-3" >
                 <ul class="nav nav-pills flex-column mb-auto">
-                    <button class="class-switch focused" onclick="changeClass(this)">CSCI 1111</button>
-                    <button class="class-switch" onclick="changeClass(this)">CSCI 2222</button>
-                    <button class="class-switch" onclick="changeClass(this)">CSCI 3333</button>
-                    <button class="class-switch" onclick="changeClass(this)">CSCI 4444</button>
-                    <button class="class-switch" onclick="changeClass(this)">CSCI 5555</button>
+                    <button class="class-switch focused" onclick="changeClass(this, 1)">CSCI 1111</button>
+                    <button class="class-switch" onclick="changeClass(this, 2)">CSCI 2222</button>
+                    <button class="class-switch" onclick="changeClass(this, 3)">CSCI 3333</button>
+                    <button class="class-switch" onclick="changeClass(this, 4)">CSCI 4444</button>
+                    <button class="class-switch" onclick="changeClass(this, 5)">CSCI 5555</button>
                 </ul>
             </div>
     
@@ -52,30 +52,7 @@
                 </form>
             </div>
         </div>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="./js/chatRoom.js"></script>
     </body>
 </html>
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="./js/chatRoom.js"></script>
-<script>
-    function changeClass(btn){
-        prev_active_btn = document.querySelector(".class-switch.focused");
-        prev_active_btn.className = "class-switch";
-
-        btn.className = "class-switch focused";
-        
-        titleEl = document.getElementById("class-name");
-        new_title = btn.innerHTML;
-        titleEl.innerHTML = new_title;
-        
-        socket.emit('leaveRoom', { room: currentRoom });
-        // Update the current room
-        currentRoom = newRoom;
-        // Emit joinRoom event for the new room
-        socket.emit('joinRoom', { username, room: newRoom });
-
-        // Switch between message lists once implemented
-    }
-
-
-</script>

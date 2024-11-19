@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response, NextFunction, response } from 'express';
 import bcrypt from 'bcryptjs';
 import session, { SessionOptions, SessionData } from 'express-session';
 import path, { dirname } from 'path';
@@ -207,16 +207,39 @@ app.get('/user-data', auth, (req: Request, res: Response) => {
   }
 });
 
+app.get('/user-classes', auth, (req: Request, res: Response) => {
+  const student_id = req.session.user.student_id; // Retrieve student_id from session
+  const query_str = "SELECT class_id FROM student_to_class WHERE student_id = $1";
+  const values = [student_id];
+
+  db.manyOrNone(query_str, values)
+    .then((data) => {
+      res.json(data);
+    })
+    .catch((error) => {
+      console.error('Error fetching user classes:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    });
+});
+
 // app.use(auth);
 
 io.on('connection', (socket) => {
     // Join a room
-    socket.on('joinRoom', ({ username, room }) => {
+    socket.on('joinRoom', async ({ username, room }) => {
         socket.join(room);
         (socket as any).username = username;
         (socket as any).room = room;
         console.log(`User ${username} joined room ${room}`);
-
+        // Fetch previous messages from the database
+        try {
+            const messages = await db.manyOrNone('SELECT * FROM messages WHERE class_id = $1 ORDER BY created_at ASC', [room]);
+            // Emit previous messages to the user who just joined
+            console.log(messages)
+            socket.emit('previousMessages', messages);
+        } catch (error) {
+            console.error('Error fetching previous messages:', error);
+        }
         // Emit to the room that a user has joined
         socket.to(room).emit('userJoined', { id: socket.id, msg: `${username} has joined the room` });
     });
