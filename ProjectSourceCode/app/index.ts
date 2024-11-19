@@ -29,10 +29,10 @@ app.use(express.json());
 app.engine('.hbs', engine({
   extname: '.hbs',
   defaultLayout: false,
-  partialsDir: path.join(__dirname, '../views/partials'), 
+  partialsDir: path.join(__dirname, 'views/partials'), 
 }));
 app.set('view engine', 'hbs');
-console.log('Partials directory:', path.join(__dirname, '../views/partials'));
+console.log('Partials directory:', path.join(__dirname, 'views/partials'));
 
 // set Session
 const sessionOptions: SessionOptions = {
