@@ -156,5 +156,6 @@ function changeClass(btn, newClass) {
     // Join the new room
     socket.emit('joinRoom', { username, room: currentRoom });
 
-    // Switch between message lists once implemented
+    // Switch between message lists
+    window.location.href = `./${newClass}`;
 }
