@@ -358,6 +358,12 @@ app.post('/add', (req, res)=> {
   });
 });
 
+// Logout
+app.get('/logout', (req: Request, res: Response) => {
+  req.session.destroy;
+  res.redirect('/login');
+});
+
 io.on('connection', (socket) => {
     // Join a room
     console.log(`user connected`);
