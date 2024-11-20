@@ -6,17 +6,19 @@ import db from './db';
 import { Server } from 'socket.io';
 import { engine } from 'express-handlebars';
 import bodyParser from 'body-parser'
+import {createServer} from 'http';
 
 const PORT = process.env.PORT || 3000;
 
 const app: Express = express();
-const server = require('http').createServer(app, {
+const server = createServer(app);
+const io = new Server(server, 
+  {
     cors: {
-        origin: process.env.NODE_ENV === "production" ? false :
-        [`http://localhost:${PORT}`]
-    }
-});
-const io = new Server(server);
+      origin: process.env.NODE_ENV === "production" ? false : [`http://localhost:${PORT}`]
+    } 
+  }
+);
 
 // app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
