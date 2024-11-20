@@ -16,4 +16,4 @@ Josh: Created front-end messages for errors/invalid input with handlebars and wo
 
 Alan: Wrote chat routes with different urls for each class and a default route.
 
-Everyone else will work on bug fixes.
+Everyone without a specific next step will work on debugging.
