@@ -46,6 +46,7 @@ declare module "express-session" {
       student_id: number
       name: string
       email: string
+      classes: any[]
     }
   }
 }
@@ -178,10 +179,41 @@ interface User {
   student_id: number,
   name: string,
   email: string,
+  classes: any[]
 };
 
-app.get('/chat', auth, function (req, res) {
-  res.render('pages/chat.hbs');
+app.get('/chat', auth, (req, res) => {
+  if(req.session.user.student_id && req.session.user.classes.length > 0){
+    res.redirect(`/chat/${req.session.user.classes[0].class_id}`);
+  }
+  else{
+    res.redirect('/add');
+  }
+});
+
+app.get('/chat/:id', auth, (req, res) => {
+  if(req.session.user.student_id && req.session.user.classes){
+    var classes = req.session.user.classes;
+    // console.log(classes);
+    if (classes.length == 0){
+      return res.redirect('/add');
+    }
+    else{
+      var class_id = req.params.id;
+      var class_code = classes.find( c => c.class_id == class_id).class_code;
+      var q = "SELECT * FROM messages m JOIN student s ON m.student_id = s.student_id WHERE m.class_id = $1;";
+      db.manyOrNone(q, [class_id]).then( messages => {
+        res.render('pages/chat.hbs', {
+          messages: messages,
+          classes: classes,
+          className: class_code
+        });
+      });
+    }
+  }
+  else{
+    res.redirect("/login");
+  }
 });
 
 app.get('/login', (req, res) => {
@@ -202,17 +234,24 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
       // check if password from request matches with password in DB
       const match: boolean = await bcrypt.compare(password, data.password);
 
-      if (match) {
-        const user: User = {
-          student_id: data.student_id,
-          name: data.name,
-          email: data.email
-        };
-
-        req.session.user = user;
-        req.session.save();
-
-        res.redirect('/chat');
+      if (match) {        
+        const query_str = "SELECT * FROM student_to_class stc JOIN class c ON stc.class_id = c.class_id WHERE stc.student_id = $1;";
+        db.manyOrNone(query_str, [data.student_id])
+          .then((classes) => {
+            const user: User = {
+              student_id: data.student_id,
+              name: data.name,
+              email: data.email,
+              classes: classes
+            };            
+            req.session.user = user;
+            req.session.save();
+    
+            res.redirect('/chat');
+          })
+          .catch((error) => {
+            return error;
+          });
       } else {
         console.log('Incorrect email or password');
         res.redirect(401, '/login');
@@ -245,7 +284,9 @@ app.get('/user-classes', auth, (req: Request, res: Response) => {
       console.error('Error fetching user classes:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     });
-});app.get('/add', (req, res) => {
+});
+
+app.get('/add', (req, res) => {
   res.render('pages/add_class.hbs');
 });
 
@@ -281,6 +322,14 @@ app.post('/add', (req, res)=> {
       [student_id, class_id]
     );  
     console.log('Insert successful');
+
+    t.manyOrNone(
+      'SELECT * FROM student_to_class stc JOIN class c ON stc.class_id = c.class_id WHERE stc.student_id = $1;',
+      [student_id]
+    ).then(classes =>{
+      req.session.user.classes = classes;
+      console.log(classes);
+    })
   })
   .then(result => {
     res.render('pages/add_class.hbs', { message: `Successfully added course ${class_code}`}); // Success message
@@ -292,17 +341,22 @@ app.post('/add', (req, res)=> {
 
 io.on('connection', (socket) => {
     // Join a room
+    console.log(`user connected`);
     socket.on('joinRoom', async ({ username, room }) => {
+      
         socket.join(room);
         (socket as any).username = username;
         (socket as any).room = room;
         console.log(`User ${username} joined room ${room}`);
         // Fetch previous messages from the database
         try {
-            const messages = await db.manyOrNone('SELECT * FROM messages WHERE class_id = $1 ORDER BY created_at ASC', [room]);
-            // Emit previous messages to the user who just joined
-            console.log(messages)
-            socket.emit('previousMessages', messages);
+          const msg_data = await db.manyOrNone(
+            `SELECT s.name, m.message_body, m.created_at FROM messages AS m
+             JOIN student AS s ON s.student_id = m.student_id 
+             WHERE class_id = $1 
+             ORDER BY created_at ASC`, [room]);
+          // Emit previous messages to the user who just joined
+          socket.emit('previousMessages', msg_data);
         } catch (error) {
             console.error('Error fetching previous messages:', error);
         }

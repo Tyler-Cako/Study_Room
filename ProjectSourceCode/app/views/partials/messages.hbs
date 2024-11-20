@@ -1,5 +1,11 @@
 {{#each messages}}
     {{#with this}}
-        {{>message}}
+        <div class="message">
+            <div class="message-info row">
+                <p class="sender">{{name}}</p>
+                <p class="timestamp">{{created_at}}</p>
+            </div>
+            <p class="message-text">{{message_body}}</p>
+        </div>
     {{/with}}
 {{/each}}

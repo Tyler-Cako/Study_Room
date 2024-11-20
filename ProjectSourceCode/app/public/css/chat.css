@@ -5,11 +5,9 @@ ul.navbar-nav{
     background: none;
     border: none;        
     border-radius: 5px;
-    padding: 0.25rem;
-    margin: 0.25rem;
-    transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
-}
-.class-switch.focused, .class-switch:hover{
+    padding: 0.5rem;
+    margin: 0.75rem 0.25rem;
+    font-size: medium;
     box-shadow: inset 100px 0 0 100px var(--bs-secondary);
     color: white;
 }
