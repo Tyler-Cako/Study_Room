@@ -130,8 +130,8 @@ app.get('/', auth, function (req, res) {
   res.redirect('/chat');
 });
 
-app.get('/register', (req, res) => {
-  res.render('pages/register.hbs');
+app.get('/register', auth, function (req, res) {
+  res.redirect('/chat');
 });
 
 app.post('/register', async (req: Request, res: Response): Promise<void> => {
@@ -288,6 +288,12 @@ app.post('/add', (req, res)=> {
   .catch(err => {
     res.render('pages/add_class.hbs', { message: err.message, error: true }); // Error message
   });
+});
+
+// Logout
+app.get('/logout', (req: Request, res: Response) => {
+  req.session.destroy;
+  res.redirect('/login');
 });
 
 io.on('connection', (socket) => {
