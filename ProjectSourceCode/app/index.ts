@@ -350,9 +350,13 @@ io.on('connection', (socket) => {
         console.log(`User ${username} joined room ${room}`);
         // Fetch previous messages from the database
         try {
-            const messages = await db.manyOrNone('SELECT * FROM messages WHERE class_id = $1 ORDER BY created_at ASC', [room]);
-            // Emit previous messages to the user who just joined
-            socket.emit('previousMessages', messages);
+          const msg_data = await db.manyOrNone(
+            `SELECT s.name, m.message_body, m.created_at FROM messages AS m
+             JOIN student AS s ON s.student_id = m.student_id 
+             WHERE class_id = $1 
+             ORDER BY created_at ASC`, [room]);
+          // Emit previous messages to the user who just joined
+          socket.emit('previousMessages', msg_data);
         } catch (error) {
             console.error('Error fetching previous messages:', error);
         }

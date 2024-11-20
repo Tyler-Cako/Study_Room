@@ -89,8 +89,9 @@ getUserData().then(data => {
 
     socket.on('previousMessages', (msgs) => {
         // same code as whats in onMessage, just populating for each message that was found in db
+        messages.innerHTML = '';
         if (Array.isArray(msgs)) {
-            msgs.forEach(({ display_name, message_body, created_at }) => {
+            msgs.forEach(({ name, message_body, created_at }) => {
                 const msgEl = document.createElement('div');
                 msgEl.classList = "message";
 
@@ -100,7 +101,7 @@ getUserData().then(data => {
 
                 const sender = document.createElement('p');
                 sender.classList = "sender";
-                sender.textContent = display_name;
+                sender.textContent = name;
                 msgInfo.appendChild(sender);
 
                 const timestamp = document.createElement('p');
@@ -131,6 +132,7 @@ getUserData().then(data => {
     });
 
     window.addEventListener('beforeunload', () => {
+        messages.innerHTML = '';
         socket.emit('leaveRoom', { room: currentRoom });
       });
 
