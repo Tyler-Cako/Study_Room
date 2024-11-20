@@ -4,7 +4,7 @@ const input = document.getElementById('input-text');
 const messages = document.getElementById('message-history');
 
 
-let currentRoom = 0; // class_id
+let currentRoom = parseInt(window.location.pathname.split('/').pop(), 10); // Extract the class_id from the URL and convert to an integer
 let username;
 let id;
 
@@ -33,14 +33,15 @@ async function getUserData() {
 getUserData().then(data => {
     username = data.name;
     id = data.student_id;
-
     
     // Join a room
-    socket.emit('joinRoom', { username, currentRoom });
+    if (currentRoom) {
+        socket.emit('joinRoom', { username: username, room: currentRoom })
+    } else {
+        console.error('Undefined room')
+    }
     
-    console.log("variables:",username, id, currentRoom)
     form.addEventListener('submit', (e) => {
-        console.log(input.value);
         e.preventDefault();
         if (input.value && currentRoom != undefined) {
             socket.emit('chatMessage', { room: currentRoom, msg: input.value, student_id: id, display_name: username});
@@ -60,7 +61,6 @@ getUserData().then(data => {
     });
 
     socket.on('chatMessage', ({ display_name, msg, time }) => {
-        console.log(messages);
         const msgEl = document.createElement('div');
         msgEl.classList = "message";
 
@@ -89,8 +89,9 @@ getUserData().then(data => {
 
     socket.on('previousMessages', (msgs) => {
         // same code as whats in onMessage, just populating for each message that was found in db
+        messages.innerHTML = '';
         if (Array.isArray(msgs)) {
-            msgs.forEach(({ display_name, message_body, created_at }) => {
+            msgs.forEach(({ name, message_body, created_at }) => {
                 const msgEl = document.createElement('div');
                 msgEl.classList = "message";
 
@@ -100,7 +101,7 @@ getUserData().then(data => {
 
                 const sender = document.createElement('p');
                 sender.classList = "sender";
-                sender.textContent = display_name;
+                sender.textContent = name;
                 msgInfo.appendChild(sender);
 
                 const timestamp = document.createElement('p');
@@ -129,6 +130,12 @@ getUserData().then(data => {
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
     });
+
+    window.addEventListener('beforeunload', () => {
+        messages.innerHTML = '';
+        socket.emit('leaveRoom', { room: currentRoom });
+      });
+
 }).catch(error => {
     console.error('Error fetching user data:', error);
     // Redirect to login page or show an error message
@@ -157,5 +164,5 @@ function changeClass(btn, newClass) {
     socket.emit('joinRoom', { username, room: currentRoom });
 
     // Switch between message lists
-    window.location.href = `./${newClass}`;
+    history.pushState(null, '', `./${newClass}`);
 }

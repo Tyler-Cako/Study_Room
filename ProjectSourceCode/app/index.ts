@@ -194,7 +194,7 @@ app.get('/chat', auth, (req, res) => {
 app.get('/chat/:id', auth, (req, res) => {
   if(req.session.user.student_id && req.session.user.classes){
     var classes = req.session.user.classes;
-    console.log(classes);
+    // console.log(classes);
     if (classes.length == 0){
       return res.redirect('/add');
     }
@@ -203,7 +203,6 @@ app.get('/chat/:id', auth, (req, res) => {
       var class_code = classes.find( c => c.class_id == class_id).class_code;
       var q = "SELECT * FROM messages m JOIN student s ON m.student_id = s.student_id WHERE m.class_id = $1;";
       db.manyOrNone(q, [class_id]).then( messages => {
-        console.log(messages);
         res.render('pages/chat.hbs', {
           messages: messages,
           classes: classes,
@@ -342,17 +341,22 @@ app.post('/add', (req, res)=> {
 
 io.on('connection', (socket) => {
     // Join a room
+    console.log(`user connected`);
     socket.on('joinRoom', async ({ username, room }) => {
+      
         socket.join(room);
         (socket as any).username = username;
         (socket as any).room = room;
         console.log(`User ${username} joined room ${room}`);
         // Fetch previous messages from the database
         try {
-            const messages = await db.manyOrNone('SELECT * FROM messages WHERE class_id = $1 ORDER BY created_at ASC', [room]);
-            // Emit previous messages to the user who just joined
-            console.log(messages)
-            socket.emit('previousMessages', messages);
+          const msg_data = await db.manyOrNone(
+            `SELECT s.name, m.message_body, m.created_at FROM messages AS m
+             JOIN student AS s ON s.student_id = m.student_id 
+             WHERE class_id = $1 
+             ORDER BY created_at ASC`, [room]);
+          // Emit previous messages to the user who just joined
+          socket.emit('previousMessages', msg_data);
         } catch (error) {
             console.error('Error fetching previous messages:', error);
         }
