@@ -174,19 +174,24 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
       req.body.name,
       req.body.email,
       hash,
-    ]);
+    ])
+    .then((data: any) => {
+      console.log(`Registered user with the following credientials:\n
+        name: ${req.body.name}, email: ${req.body.email}`);
+        res.redirect('/login');
+      })
+    .catch((err: Error) => {
+      res.status(400).render('pages/register.hbs', { message: err.message, error: true });
+    });
     console.log('Insert successful');
   })
     .then((data: any) => {
       console.log(`Registered user with the following credientials:\n
-        name: ${req.body.name}, email: ${req.body.email}`)
-      res.status(201);
-      res.redirect('/login');
-    })
+        name: ${req.body.name}, email: ${req.body.email}`);
+        res.redirect('/login');
+      })
     .catch((err: Error) => {
-      console.log(err);
-      res.status(400);
-      res.render('pages/register.hbs', { message: err.message, error: true }); // Error message
+      res.status(400).render('pages/register.hbs', { message: err.message, error: true });
     });
 });
 
@@ -271,6 +276,7 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
             res.redirect('/chat');
           })
           .catch((error) => {
+            res.status(400)
             return error;
           });
       } else {
@@ -280,7 +286,7 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
     })
     .catch((err: Error) => {
       console.log(err);
-      res.render('pages/login.hbs', { message: err.message, error: true }); // Error message
+      res.status(400).render('pages/login.hbs', { message: err.message, error: true });
     });
 });
 
