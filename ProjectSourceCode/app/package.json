@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npx tsc --watch\" \"nodemon index.ts\"",
     "start": "node dist/index.js",
-    "build": "tsc",
+    "build": "tsc -p .",
     "prestart": "npm install",
     "test": "mocha --require ts-node/register ./test/**/*.js",
     "testandrun": "npm run prestart && npm run build && npm run test && npm start"
