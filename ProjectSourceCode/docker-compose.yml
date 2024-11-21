@@ -1,7 +1,7 @@
 services:
   db:
     image: "postgres:latest"
-    env_file: ./.env
+    env_file: .env
     restart: always
     ports:
       - 5432:5432
@@ -20,6 +20,8 @@ services:
       - 3000:3000
     volumes:
       - ./app:/home/node/app
+    command: 'npm run testandrun'
+
 
   # pgadmin:
   #   image: dpage/pgadmin4

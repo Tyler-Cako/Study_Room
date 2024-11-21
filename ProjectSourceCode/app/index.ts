@@ -6,33 +6,35 @@ import db from './db';
 import { Server } from 'socket.io';
 import { engine } from 'express-handlebars';
 import bodyParser from 'body-parser'
+import {createServer} from 'http';
 
 const PORT = process.env.PORT || 3000;
 
 const app: Express = express();
-const server = require('http').createServer(app, {
+const server = createServer(app);
+const io = new Server(server, 
+  {
     cors: {
-        origin: process.env.NODE_ENV === "production" ? false :
-        [`http://localhost:${PORT}`]
-    }
-});
-const io = new Server(server);
+      origin: process.env.NODE_ENV === "production" ? false : [`http://localhost:${PORT}`]
+    } 
+  }
+);
 
 // app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, 'dist')));
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../views'));
 app.use(express.json());
 
 // Register `handlebars` as view engine
 app.engine('.hbs', engine({
   extname: '.hbs',
   defaultLayout: false,
-  partialsDir: path.join(__dirname, 'views/partials'), 
+  partialsDir: path.join(__dirname, '../views/partials'), 
 }));
 app.set('view engine', 'hbs');
-console.log('Partials directory:', path.join(__dirname, 'views/partials'));
+console.log('Partials directory:', path.join(__dirname, '../views/partials'));
 
 // set Session
 const sessionOptions: SessionOptions = {
@@ -132,7 +134,11 @@ app.get('/', auth, function (req, res) {
 });
 
 app.get('/register', (req, res) => {
-  res.render('pages/register.hbs');
+  if (req.session.user){
+    res.redirect('/chat');
+  } else {
+    res.render('pages/register.hbs');
+  }
 });
 
 app.post('/register', async (req: Request, res: Response): Promise<void> => {
@@ -154,12 +160,23 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
   const query: string = 
     'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
 
-  db.any(query, [
-    req.body.name as string,
-    req.body.email as string,
-    hash,
-  ])
+  db.tx(async t => {
+    const userExists = await t.oneOrNone(
+      'select * from student where email = $1;',
+      [email]
+    );
+    console.log('User Exists', userExists);
+    if (userExists) {
+      throw new Error("User already exists with this email");
+    }
 
+    await t.none(query, [
+      req.body.name,
+      req.body.email,
+      hash,
+    ]);
+    console.log('Insert successful');
+  })
     .then((data: any) => {
       console.log(`Registered user with the following credientials:\n
         name: ${req.body.name}, email: ${req.body.email}`)
@@ -169,7 +186,7 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
     .catch((err: Error) => {
       console.log(err);
       res.status(400);
-      res.redirect('/register');
+      res.render('pages/register.hbs', { message: err.message, error: true }); // Error message
     });
 });
 
@@ -217,13 +234,14 @@ app.get('/chat/:id', auth, (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  res.render('pages/login.hbs');
+  if (req.session.user) {
+    res.redirect('/chat');
+  } else {
+    res.render('pages/login.hbs');
+  }
 });
 
 app.post('/login', (req: Request, res: Response, next: NextFunction) => {
-  // req.session.regenerate(function (err) {
-  //   if (err) next(err)
-  // })
   const email: string = req.body.email;
   const password: string = req.body.password;
   const query: string = 'select * from student where student.email = $1 LIMIT 1;';
@@ -231,6 +249,9 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
 
   db.oneOrNone(query, values)
     .then(async (data: { student_id: number; name: string; email: string; password: string }) => {
+      if (!data) {
+        throw new Error('Incorrect email or password');
+      }
       // check if password from request matches with password in DB
       const match: boolean = await bcrypt.compare(password, data.password);
 
@@ -254,12 +275,12 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
           });
       } else {
         console.log('Incorrect email or password');
-        res.redirect(401, '/login');
+        throw new Error('Incorrect email or password');
       }
     })
     .catch((err: Error) => {
       console.log(err);
-      res.redirect(401, '/login');
+      res.render('pages/login.hbs', { message: err.message, error: true }); // Error message
     });
 });
 
@@ -278,7 +299,8 @@ app.get('/user-classes', auth, (req: Request, res: Response) => {
 
   db.manyOrNone(query_str, values)
     .then((data) => {
-      res.json(data);
+      //res.json(data);
+      res.render('pages/add_class', {data})
     })
     .catch((error) => {
       console.error('Error fetching user classes:', error);
@@ -287,7 +309,19 @@ app.get('/user-classes', auth, (req: Request, res: Response) => {
 });
 
 app.get('/add', (req, res) => {
-  res.render('pages/add_class.hbs');
+  const student_id = req.session.user.student_id;
+  const query = 'SELECT DISTINCT class_code FROM class';
+  db.manyOrNone(query)
+    .then(data => {
+      const message = req.query.message || null;
+      const error = req.query.error == 'true';
+      // Render the add_class page with the fetched data
+      res.render('pages/add_class', { data, message,error });
+    })
+    .catch(error => {
+      console.error('Error fetching classes:', error);
+      res.status(500).render('pages/add_class', { message: 'Error fetching classes.', error: true });
+    });
 });
 
 app.post('/add', (req, res)=> {
@@ -332,11 +366,18 @@ app.post('/add', (req, res)=> {
     })
   })
   .then(result => {
-    res.render('pages/add_class.hbs', { message: `Successfully added course ${class_code}`}); // Success message
+    res.redirect(`/add?message=Successfully added course ${class_code}`);
   })
   .catch(err => {
-    res.render('pages/add_class.hbs', { message: err.message, error: true }); // Error message
+    res.redirect(`/add?message=${encodeURIComponent(err.message)}&error=true`);
   });
+});
+
+// Logout
+app.get('/logout', (req, res) => {
+  req.session.destroy(function(err) {
+    res.redirect('/login');
+  })
 });
 
 io.on('connection', (socket) => {
@@ -373,8 +414,8 @@ io.on('connection', (socket) => {
 
       // Add to the database
       try {
-          await db.none('INSERT INTO messages(student_id, class_id, message_body, created_at) VALUES($1, $2, $3, $4)', 
-                        [student_id, room, msg, time]);
+        await db.none('INSERT INTO messages(student_id, class_id, message_body, created_at) VALUES($1, $2, $3, $4)', 
+          [student_id, room, msg, time]);
       } catch (error) {
           console.error('Error adding message to the database:', error);
       }
