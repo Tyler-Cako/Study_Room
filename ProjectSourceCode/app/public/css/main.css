@@ -35,7 +35,7 @@ form {
     align-items: center;
     font-size:20px;
 }
-#name, #password, #email, #button,#class { /*added #class, need to update on github*/
+#name, #password, #email, #button,#class, #semester, #section { /*added #class, need to update on github*/
     border-radius: 10px;
 }
 
