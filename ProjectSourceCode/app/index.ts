@@ -359,9 +359,10 @@ app.post('/add', (req, res)=> {
 });
 
 // Logout
-app.get('/logout', (req: Request, res: Response) => {
-  req.session.destroy;
-  res.redirect('/login');
+app.get('/logout', (req, res) => {
+  req.session.destroy(function(err) {
+    res.redirect('/login');
+  })
 });
 
 io.on('connection', (socket) => {
