@@ -6,33 +6,35 @@ import db from './db';
 import { Server } from 'socket.io';
 import { engine } from 'express-handlebars';
 import bodyParser from 'body-parser'
+import {createServer} from 'http';
 
 const PORT = process.env.PORT || 3000;
 
 const app: Express = express();
-const server = require('http').createServer(app, {
+const server = createServer(app);
+const io = new Server(server, 
+  {
     cors: {
-        origin: process.env.NODE_ENV === "production" ? false :
-        [`http://localhost:${PORT}`]
-    }
-});
-const io = new Server(server);
+      origin: process.env.NODE_ENV === "production" ? false : [`http://localhost:${PORT}`]
+    } 
+  }
+);
 
 // app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')));
 // app.use('/socket.io', express.static(path.join(__dirname, './node_modules/socket.io')));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.static(path.join(__dirname, 'dist')));
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../views'));
 app.use(express.json());
 
 // Register `handlebars` as view engine
 app.engine('.hbs', engine({
   extname: '.hbs',
   defaultLayout: false,
-  partialsDir: path.join(__dirname, 'views/partials'), 
+  partialsDir: path.join(__dirname, '../views/partials'), 
 }));
 app.set('view engine', 'hbs');
-console.log('Partials directory:', path.join(__dirname, 'views/partials'));
+console.log('Partials directory:', path.join(__dirname, '../views/partials'));
 
 // set Session
 const sessionOptions: SessionOptions = {
