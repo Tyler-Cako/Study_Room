@@ -280,7 +280,8 @@ app.get('/user-classes', auth, (req: Request, res: Response) => {
 
   db.manyOrNone(query_str, values)
     .then((data) => {
-      res.json(data);
+      //res.json(data);
+      res.render('pages/add_class', {data})
     })
     .catch((error) => {
       console.error('Error fetching user classes:', error);
@@ -289,7 +290,19 @@ app.get('/user-classes', auth, (req: Request, res: Response) => {
 });
 
 app.get('/add', (req, res) => {
-  res.render('pages/add_class.hbs');
+  const student_id = req.session.user.student_id;
+  const query = 'SELECT DISTINCT class_code FROM class';
+  db.manyOrNone(query)
+    .then(data => {
+      const message = req.query.message || null;
+      const error = req.query.error == 'true';
+      // Render the add_class page with the fetched data
+      res.render('pages/add_class', { data, message,error });
+    })
+    .catch(error => {
+      console.error('Error fetching classes:', error);
+      res.status(500).render('pages/add_class', { message: 'Error fetching classes.', error: true });
+    });
 });
 
 app.post('/add', (req, res)=> {
@@ -334,10 +347,10 @@ app.post('/add', (req, res)=> {
     })
   })
   .then(result => {
-    res.render('pages/add_class.hbs', { message: `Successfully added course ${class_code}`}); // Success message
+    res.redirect(`/add?message=Successfully added course ${class_code}`);
   })
   .catch(err => {
-    res.render('pages/add_class.hbs', { message: err.message, error: true }); // Error message
+    res.redirect(`/add?message=${encodeURIComponent(err.message)}&error=true`);
   });
 });
 

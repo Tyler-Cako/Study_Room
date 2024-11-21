@@ -20,10 +20,15 @@
   {{> success-fail }}
         <div class="centered-div">
             <form action="/add" method="post">
-                <p style="color:white;"> Please enter the name of the course you want to add. </p>
-              <input type="text" name="class" id="class" placeholder="(CSCI 1234)" required> <br>
-              <input type="number" name="section" placeholder="Section Number" required> <br> 
-              <input type="text" name="semester" placeholder="Semester (SP25)" required> <br>
+                <p style="color:white;"> Please select the course you want to add. </p>
+              <select name="class" id="class" placeholder="(CSCI 1234)" required> 
+                <option value="" disabled selected> Select a course: </option>
+                {{#each data}}
+                  <option value="{{this.class_code}}"> {{this.class_code}} </option>
+                {{/each}}
+              </select><br> 
+              <input type="number" name="section" id="section" placeholder="Section Number" required> <br> 
+              <input type="text" name="semester" id="semester" value="SP25" placeholder="Semester" required> <br>
               <button style="font-size:20px;" id="button" type="submit" class="btn btn-success"> Add Class </button>
             </form>
         </div>
