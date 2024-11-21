@@ -361,7 +361,7 @@ io.on('connection', (socket) => {
             console.error('Error fetching previous messages:', error);
         }
         // Emit to the room that a user has joined
-        socket.to(room).emit('userJoined', { id: socket.id, msg: `${username} has joined the room` });
+        socket.to(room).emit('userJoined', { user: username, msg: `${username} has joined the room` });
     });
     socket.on('leaveRoom', ({ room }) => {
         socket.leave(room);

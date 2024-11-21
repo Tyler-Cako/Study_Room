@@ -54,7 +54,7 @@ getUserData().then(data => {
     
     socket.on('userJoined', (data) => {
         const item = document.createElement('li');
-        item.textContent = `User ${data.id} joined the chat`;
+        item.textContent = `User ${data.user} joined the chat`;
         item.style.color = '#0059ff';
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
@@ -125,7 +125,7 @@ getUserData().then(data => {
 
     socket.on('userDisconnect', (data) => {
         const item = document.createElement('li');
-        item.textContent = `User ${data.id} disconnected`;
+        item.textContent = `User ${username} disconnected`;
         item.style.color = '#ed004f';
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
