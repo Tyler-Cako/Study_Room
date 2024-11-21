@@ -134,7 +134,11 @@ app.get('/', auth, function (req, res) {
 });
 
 app.get('/register', (req, res) => {
-  res.render('pages/register.hbs');
+  if (req.session.user){
+    res.redirect('/chat');
+  } else {
+    res.render('pages/register.hbs');
+  }
 });
 
 app.post('/register', async (req: Request, res: Response): Promise<void> => {
@@ -156,12 +160,23 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
   const query: string = 
     'insert into student (name, email, password) values ($1, $2, $3)  returning * ;';
 
-  db.any(query, [
-    req.body.name as string,
-    req.body.email as string,
-    hash,
-  ])
+  db.tx(async t => {
+    const userExists = await t.oneOrNone(
+      'select * from student where email = $1;',
+      [email]
+    );
+    console.log('User Exists', userExists);
+    if (userExists) {
+      throw new Error("User already exists with this email");
+    }
 
+    await t.none(query, [
+      req.body.name,
+      req.body.email,
+      hash,
+    ]);
+    console.log('Insert successful');
+  })
     .then((data: any) => {
       console.log(`Registered user with the following credientials:\n
         name: ${req.body.name}, email: ${req.body.email}`)
@@ -171,7 +186,7 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
     .catch((err: Error) => {
       console.log(err);
       res.status(400);
-      res.redirect('/register');
+      res.render('pages/register.hbs', { message: err.message, error: true }); // Error message
     });
 });
 
@@ -219,13 +234,14 @@ app.get('/chat/:id', auth, (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  res.render('pages/login.hbs');
+  if (req.session.user) {
+    res.redirect('/chat');
+  } else {
+    res.render('pages/login.hbs');
+  }
 });
 
 app.post('/login', (req: Request, res: Response, next: NextFunction) => {
-  // req.session.regenerate(function (err) {
-  //   if (err) next(err)
-  // })
   const email: string = req.body.email;
   const password: string = req.body.password;
   const query: string = 'select * from student where student.email = $1 LIMIT 1;';
@@ -233,6 +249,9 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
 
   db.oneOrNone(query, values)
     .then(async (data: { student_id: number; name: string; email: string; password: string }) => {
+      if (!data) {
+        throw new Error('Incorrect email or password');
+      }
       // check if password from request matches with password in DB
       const match: boolean = await bcrypt.compare(password, data.password);
 
@@ -256,12 +275,12 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
           });
       } else {
         console.log('Incorrect email or password');
-        res.redirect(401, '/login');
+        throw new Error('Incorrect email or password');
       }
     })
     .catch((err: Error) => {
       console.log(err);
-      res.redirect(401, '/login');
+      res.render('pages/login.hbs', { message: err.message, error: true }); // Error message
     });
 });
 
@@ -341,6 +360,13 @@ app.post('/add', (req, res)=> {
   });
 });
 
+// Logout
+app.get('/logout', (req, res) => {
+  req.session.destroy(function(err) {
+    res.redirect('/login');
+  })
+});
+
 io.on('connection', (socket) => {
     // Join a room
     console.log(`user connected`);
@@ -375,8 +401,8 @@ io.on('connection', (socket) => {
 
       // Add to the database
       try {
-          await db.none('INSERT INTO messages(student_id, class_id, message_body, created_at) VALUES($1, $2, $3, $4)', 
-                        [student_id, room, msg, time]);
+        await db.none('INSERT INTO messages(student_id, class_id, message_body, created_at) VALUES($1, $2, $3, $4)', 
+          [student_id, room, msg, time]);
       } catch (error) {
           console.error('Error adding message to the database:', error);
       }
