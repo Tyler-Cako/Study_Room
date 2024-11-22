@@ -170,29 +170,21 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
       throw new Error("User already exists with this email");
     }
 
-    await t.none(query, [
+    var data = await t.oneOrNone(query, [
       req.body.name,
       req.body.email,
       hash,
     ])
-    .then((data: any) => {
+    if(data) {
       console.log(`Registered user with the following credientials:\n
         name: ${req.body.name}, email: ${req.body.email}`);
-        res.redirect('/login');
-      })
-    .catch((err: Error) => {
-      res.status(400).render('pages/register.hbs', { message: err.message, error: true });
-    });
-    console.log('Insert successful');
+        res.status(200).redirect('/login');
+
+    }
   })
-    .then((data: any) => {
-      console.log(`Registered user with the following credientials:\n
-        name: ${req.body.name}, email: ${req.body.email}`);
-        res.redirect('/login');
-      })
-    .catch((err: Error) => {
-      res.status(400).render('pages/register.hbs', { message: err.message, error: true });
-    });
+  .catch(err => {
+    res.status(400).render('pages/register.hbs');
+  });
 });
 
 
