@@ -170,24 +170,21 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
       throw new Error("User already exists with this email");
     }
 
-    await t.none(query, [
+    var data = await t.oneOrNone(query, [
       req.body.name,
       req.body.email,
       hash,
-    ]);
-    console.log('Insert successful');
-  })
-    .then((data: any) => {
+    ])
+    if(data) {
       console.log(`Registered user with the following credientials:\n
-        name: ${req.body.name}, email: ${req.body.email}`)
-      res.status(201);
-      res.redirect('/login');
-    })
-    .catch((err: Error) => {
-      console.log(err);
-      res.status(400);
-      res.render('pages/register.hbs', { message: err.message, error: true }); // Error message
-    });
+        name: ${req.body.name}, email: ${req.body.email}`);
+        res.status(200).redirect('/login');
+
+    }
+  })
+  .catch(err => {
+    res.status(400).render('pages/register.hbs');
+  });
 });
 
 
@@ -271,6 +268,7 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
             res.redirect('/chat');
           })
           .catch((error) => {
+            res.status(400)
             return error;
           });
       } else {
@@ -280,7 +278,7 @@ app.post('/login', (req: Request, res: Response, next: NextFunction) => {
     })
     .catch((err: Error) => {
       console.log(err);
-      res.render('pages/login.hbs', { message: err.message, error: true }); // Error message
+      res.status(400).render('pages/login.hbs', { message: err.message, error: true });
     });
 });
 

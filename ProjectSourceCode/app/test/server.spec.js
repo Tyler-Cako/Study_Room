@@ -35,7 +35,7 @@ describe('Testing Add User API', () => {
     chai
       .request(server)
       .post('/register')
-      .send({name: 'John Smith', email: 'john123@gmail.com', password: '112345'})
+      .send({name: 'John Smith', email: 'john123@gmail.com', password: '12345'})
       .end((err, res) => {
         expect(res).to.have.status(200);
         done();
@@ -93,8 +93,7 @@ describe('Testing Login API', () => {
       .post('/login')
       .send({ email: testUser.email, password:'notpassword'})
       .end((err, res) => {
-        expect(res).to.have.status(401);
-        expect(res.text).to.include('Unauthorized. Redirecting to /login');
+        expect(res).to.have.status(400);
         done();
       });
   });

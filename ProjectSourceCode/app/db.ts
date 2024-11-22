@@ -12,7 +12,7 @@ interface DbConfig {
 
 // connecting to db
 const dbConfig: DbConfig = {
-    host: 'db', // the database server
+    host: process.env.HOST, // the database server
     port: 5432, // the database port
     database: process.env.POSTGRES_DB, // the database name
     user: process.env.POSTGRES_USER, // the user account to connect with
