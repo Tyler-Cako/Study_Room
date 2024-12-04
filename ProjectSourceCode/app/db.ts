@@ -8,6 +8,7 @@ interface DbConfig {
     database: string | undefined;
     user: string | undefined;
     password: string | undefined;
+    ssl: boolean;
 }
 
 // connecting to db
@@ -17,6 +18,7 @@ const dbConfig: DbConfig = {
     database: process.env.POSTGRES_DB, // the database name
     user: process.env.POSTGRES_USER, // the user account to connect with
     password: process.env.POSTGRES_PASSWORD, // the password of the user account
+    ssl: true,
 };
 
 const db: IDatabase<any> = pgp(dbConfig);

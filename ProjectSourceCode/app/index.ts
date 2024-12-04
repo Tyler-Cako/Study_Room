@@ -115,11 +115,10 @@ app.get('/get_students', (req, res) => {
 // testing database
 db.connect()
   .then(obj => {
-    console.log('Database connection successful'); // you can view this message in the docker compose logs
     obj.done(); // success, release the connection;
   })
   .catch(error => {
-    console.log('ERROR:', error.message || error);
+    console.log('DB CONNECT ERROR:', error.message || error);
   });
 
 // HANDLEBARS ROUTES // 
