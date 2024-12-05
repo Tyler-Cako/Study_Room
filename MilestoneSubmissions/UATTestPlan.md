@@ -50,10 +50,10 @@ Customer: i.e. the TA or other course staff. Developers can also complete UAT te
     5. User can view their profile
 
 ### Class Registration
-- **UNIT TEST:** GET Unit test by id
-    - Can receieve a class of specified id
-- **UNIT TEST:** POST unit test - create new class
-    - Can create a new class
+- **UNIT TEST:** POST Unit test - add class
+    - User can successfully add class to their schedule
+- **UNIT TEST:** POST UNIT test - add duplicate class
+    - Duplicate error when adding class already in schedule.
 
 - Acceptance Criteria:
     1. User navigates to webpage home.
