@@ -144,14 +144,14 @@ app.post('/register', async (req: Request, res: Response): Promise<void> => {
   const name = req.body.name
   const email = req.body.email
 
-  if (typeof name !== 'string') {
-    res.status(400).json({ message: 'Invalid input'});
-    return;
-  }
-  if (typeof email !== 'string' || !email.includes('@')) {
-    res.status(400).json({ message: 'Invalid input'});
-    return;
-  }
+  // if (typeof name !== 'string') {
+  //   res.status(400).json({ message: 'Invalid input'});
+  //   return;
+  // }
+  // if (typeof email !== 'string' || !email.includes('@')) {
+  //   res.status(400).json({ message: 'Invalid input'});
+  //   return;
+  // }
 
   //hash the password using bcrypt library
   const hash: string = await bcrypt.hash(req.body.password, 10);
