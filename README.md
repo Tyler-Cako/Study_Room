@@ -16,12 +16,12 @@ such that they can commicate with eachother in real time during classes, or when
 - PostgreSQL
 - Node JS
 - Websocket
-- front end framework?
+- Handlebears
 
 ### Prerequesits
 
 - Node JS
-- others...
+- Docker
 
 ### How to run locally
     0. If running on windows, open a WSL terminal
@@ -34,11 +34,15 @@ such that they can commicate with eachother in real time during classes, or when
 
 ### How to run tests
 
-To be implemented...
-
+    0. If running on windows, open a WSL terminal
+    1. Navigate to ProjectSourceCode
+    2. Create a .env file in ProjectSourceCode
+    3. Update .env file according to the environment variables posted in the teams.
+    4. npm run testandrun
+    
 ### Deployed application
 
-To be implemented...
+    - https://study-room-4n5l.onrender.com/chat/34
 
 
 ##### How to clear docker volumes:
